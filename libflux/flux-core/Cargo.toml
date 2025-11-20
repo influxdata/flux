@@ -52,7 +52,7 @@ derive_more = { version = "0.99.17", default-features = false, features = [
 ] }
 ena = "0.14"
 env_logger = "0.9"
-flatbuffers = "22.9.29"
+flatbuffers = "25.9.23"
 fnv = "1.0.7"
 indexmap = "1"
 libflate = "1.2.0"

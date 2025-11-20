@@ -19,7 +19,7 @@ label-polymorphism = []
 [dependencies]
 anyhow = "1"
 env_logger = "0.9"
-flatbuffers = "22.9.29"
+flatbuffers = "25.9.23"
 flux-core = { path = "../flux-core", default-features = false }
 once_cell = "1"
 serde = { version = "^1.0.59", optional = true, features = ["derive"] }
@@ -39,7 +39,7 @@ pretty_assertions = "1"
 [build-dependencies]
 anyhow = "1"
 env_logger = "0.9"
-flatbuffers = "22.9.29"
+flatbuffers = "25.9.23"
 flux-core = { path = "../flux-core", default-features = false }
 walkdir = "2"
 

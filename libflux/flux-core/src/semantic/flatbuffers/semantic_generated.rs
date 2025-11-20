@@ -97,7 +97,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<u8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
             Self(b)
         }
     }
@@ -106,7 +106,9 @@ pub mod fbsemantic {
         type Output = MonoType;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
@@ -222,7 +224,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<u8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
             Self(b)
         }
     }
@@ -231,7 +233,9 @@ pub mod fbsemantic {
         type Output = Type;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
@@ -317,7 +321,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<u8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
             Self(b)
         }
     }
@@ -326,7 +330,9 @@ pub mod fbsemantic {
         type Output = CollectionType;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
@@ -409,7 +415,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<u8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
             Self(b)
         }
     }
@@ -418,7 +424,9 @@ pub mod fbsemantic {
         type Output = RecordLabel;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
@@ -550,7 +558,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<u8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
             Self(b)
         }
     }
@@ -559,7 +567,9 @@ pub mod fbsemantic {
         type Output = Kind;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
@@ -669,7 +679,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<u8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
             Self(b)
         }
     }
@@ -678,7 +688,9 @@ pub mod fbsemantic {
         type Output = Statement;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
@@ -770,7 +782,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<u8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
             Self(b)
         }
     }
@@ -779,7 +791,9 @@ pub mod fbsemantic {
         type Output = Assignment;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
@@ -947,7 +961,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<u8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
             Self(b)
         }
     }
@@ -956,7 +970,9 @@ pub mod fbsemantic {
         type Output = Expression;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
@@ -1120,7 +1136,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<i8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<i8>(buf, loc) };
             Self(b)
         }
     }
@@ -1129,7 +1145,9 @@ pub mod fbsemantic {
         type Output = Operator;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<i8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<i8>(dst, self.0);
+            }
         }
     }
 
@@ -1210,7 +1228,7 @@ pub mod fbsemantic {
         type Inner = Self;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            let b = flatbuffers::read_scalar_at::<i8>(buf, loc);
+            let b = unsafe { flatbuffers::read_scalar_at::<i8>(buf, loc) };
             Self(b)
         }
     }
@@ -1219,7 +1237,9 @@ pub mod fbsemantic {
         type Output = LogicalOperator;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            flatbuffers::emplace_scalar::<i8>(dst, self.0);
+            unsafe {
+                flatbuffers::emplace_scalar::<i8>(dst, self.0);
+            }
         }
     }
 
@@ -1272,23 +1292,31 @@ pub mod fbsemantic {
         type Inner = &'a Position;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            <&'a Position>::follow(buf, loc)
+            unsafe { <&'a Position>::follow(buf, loc) }
         }
     }
     impl<'a> flatbuffers::Follow<'a> for &'a Position {
         type Inner = &'a Position;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::follow_cast_ref::<Position>(buf, loc)
+            unsafe { flatbuffers::follow_cast_ref::<Position>(buf, loc) }
         }
     }
     impl<'b> flatbuffers::Push for Position {
         type Output = Position;
         #[inline]
         unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-            let src =
-                ::core::slice::from_raw_parts(self as *const Position as *const u8, Self::size());
+            let src = unsafe {
+                ::core::slice::from_raw_parts(
+                    self as *const Position as *const u8,
+                    <Self as flatbuffers::Push>::size(),
+                )
+            };
             dst.copy_from_slice(src);
+        }
+        #[inline]
+        fn alignment() -> flatbuffers::PushAlignment {
+            flatbuffers::PushAlignment::new(4)
         }
     }
 
@@ -1383,7 +1411,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -1396,8 +1424,13 @@ pub mod fbsemantic {
             Fresher { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args FresherArgs,
         ) -> flatbuffers::WIPOffset<Fresher<'bldr>> {
             let mut builder = FresherBuilder::new(_fbb);
@@ -1437,17 +1470,19 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct FresherBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct FresherBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> FresherBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> FresherBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_u(&mut self, u: u64) {
             self.fbb_.push_slot::<u64>(Fresher::VT_U, u, 0);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> FresherBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> FresherBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             FresherBuilder {
                 fbb_: _fbb,
@@ -1480,7 +1515,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -1493,8 +1528,13 @@ pub mod fbsemantic {
             Packages { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args PackagesArgs<'args>,
         ) -> flatbuffers::WIPOffset<Packages<'bldr>> {
             let mut builder = PackagesBuilder::new(_fbb);
@@ -1549,11 +1589,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct PackagesBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct PackagesBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> PackagesBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> PackagesBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_packages(
             &mut self,
@@ -1565,7 +1605,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Packages::VT_PACKAGES, packages);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PackagesBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> PackagesBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             PackagesBuilder {
                 fbb_: _fbb,
@@ -1598,7 +1640,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -1612,8 +1654,13 @@ pub mod fbsemantic {
             PackageExports { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args PackageExportsArgs<'args>,
         ) -> flatbuffers::WIPOffset<PackageExports<'bldr>> {
             let mut builder = PackageExportsBuilder::new(_fbb);
@@ -1683,11 +1730,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct PackageExportsBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct PackageExportsBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> PackageExportsBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> PackageExportsBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_id(&mut self, id: flatbuffers::WIPOffset<&'b str>) {
             self.fbb_
@@ -1703,8 +1750,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> PackageExportsBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> PackageExportsBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             PackageExportsBuilder {
                 fbb_: _fbb,
@@ -1738,7 +1785,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -1751,8 +1798,13 @@ pub mod fbsemantic {
             TypeEnvironment { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args TypeEnvironmentArgs<'args>,
         ) -> flatbuffers::WIPOffset<TypeEnvironment<'bldr>> {
             let mut builder = TypeEnvironmentBuilder::new(_fbb);
@@ -1807,11 +1859,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct TypeEnvironmentBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct TypeEnvironmentBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> TypeEnvironmentBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> TypeEnvironmentBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_assignments(
             &mut self,
@@ -1826,8 +1878,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> TypeEnvironmentBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> TypeEnvironmentBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             TypeEnvironmentBuilder {
                 fbb_: _fbb,
@@ -1860,7 +1912,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -1874,8 +1926,13 @@ pub mod fbsemantic {
             TypeAssignment { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args TypeAssignmentArgs<'args>,
         ) -> flatbuffers::WIPOffset<TypeAssignment<'bldr>> {
             let mut builder = TypeAssignmentBuilder::new(_fbb);
@@ -1935,11 +1992,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct TypeAssignmentBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct TypeAssignmentBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> TypeAssignmentBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> TypeAssignmentBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_id(&mut self, id: flatbuffers::WIPOffset<&'b str>) {
             self.fbb_
@@ -1952,8 +2009,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> TypeAssignmentBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> TypeAssignmentBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             TypeAssignmentBuilder {
                 fbb_: _fbb,
@@ -1987,7 +2044,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -2001,8 +2058,13 @@ pub mod fbsemantic {
             MonoTypeHolder { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args MonoTypeHolderArgs,
         ) -> flatbuffers::WIPOffset<MonoTypeHolder<'bldr>> {
             let mut builder = MonoTypeHolderBuilder::new(_fbb);
@@ -2214,11 +2276,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct MonoTypeHolderBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct MonoTypeHolderBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> MonoTypeHolderBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> MonoTypeHolderBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_typ_type(&mut self, typ_type: MonoType) {
             self.fbb_
@@ -2231,8 +2293,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> MonoTypeHolderBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> MonoTypeHolderBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             MonoTypeHolderBuilder {
                 fbb_: _fbb,
@@ -2341,7 +2403,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -2354,8 +2416,13 @@ pub mod fbsemantic {
             Var { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args VarArgs,
         ) -> flatbuffers::WIPOffset<Var<'bldr>> {
             let mut builder = VarBuilder::new(_fbb);
@@ -2395,17 +2462,17 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct VarBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct VarBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> VarBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> VarBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_i(&mut self, i: u64) {
             self.fbb_.push_slot::<u64>(Var::VT_I, i, 0);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> VarBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> VarBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             VarBuilder {
                 fbb_: _fbb,
@@ -2438,7 +2505,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -2451,8 +2518,13 @@ pub mod fbsemantic {
             Basic { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args BasicArgs,
         ) -> flatbuffers::WIPOffset<Basic<'bldr>> {
             let mut builder = BasicBuilder::new(_fbb);
@@ -2496,17 +2568,17 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct BasicBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct BasicBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> BasicBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> BasicBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_t(&mut self, t: Type) {
             self.fbb_.push_slot::<Type>(Basic::VT_T, t, Type::Bool);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> BasicBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> BasicBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             BasicBuilder {
                 fbb_: _fbb,
@@ -2539,7 +2611,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -2554,8 +2626,13 @@ pub mod fbsemantic {
             Collection { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args CollectionArgs,
         ) -> flatbuffers::WIPOffset<Collection<'bldr>> {
             let mut builder = CollectionBuilder::new(_fbb);
@@ -2782,11 +2859,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct CollectionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct CollectionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> CollectionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> CollectionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_collection(&mut self, collection: CollectionType) {
             self.fbb_.push_slot::<CollectionType>(
@@ -2806,7 +2883,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Collection::VT_ARG, arg);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> CollectionBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> CollectionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             CollectionBuilder {
                 fbb_: _fbb,
@@ -2916,7 +2995,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -2930,8 +3009,13 @@ pub mod fbsemantic {
             Stream { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args StreamArgs,
         ) -> flatbuffers::WIPOffset<Stream<'bldr>> {
             let mut builder = StreamBuilder::new(_fbb);
@@ -3140,11 +3224,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct StreamBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct StreamBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> StreamBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> StreamBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_t_type(&mut self, t_type: MonoType) {
             self.fbb_
@@ -3156,7 +3240,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Stream::VT_T, t);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> StreamBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> StreamBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             StreamBuilder {
                 fbb_: _fbb,
@@ -3265,7 +3351,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -3279,8 +3365,13 @@ pub mod fbsemantic {
             Record { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args RecordArgs<'args>,
         ) -> flatbuffers::WIPOffset<Record<'bldr>> {
             let mut builder = RecordBuilder::new(_fbb);
@@ -3354,11 +3445,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct RecordBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct RecordBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> RecordBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> RecordBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_props(
             &mut self,
@@ -3375,7 +3466,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<Var>>(Record::VT_EXTENDS, extends);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> RecordBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> RecordBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             RecordBuilder {
                 fbb_: _fbb,
@@ -3409,7 +3502,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -3424,8 +3517,13 @@ pub mod fbsemantic {
             Fun { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args FunArgs<'args>,
         ) -> flatbuffers::WIPOffset<Fun<'bldr>> {
             let mut builder = FunBuilder::new(_fbb);
@@ -3659,11 +3757,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct FunBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct FunBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> FunBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> FunBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_args(
             &mut self,
@@ -3685,7 +3783,7 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Fun::VT_RETN, retn);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> FunBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> FunBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             FunBuilder {
                 fbb_: _fbb,
@@ -3795,7 +3893,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -3811,8 +3909,13 @@ pub mod fbsemantic {
             Dict { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args DictArgs,
         ) -> flatbuffers::WIPOffset<Dict<'bldr>> {
             let mut builder = DictBuilder::new(_fbb);
@@ -4200,11 +4303,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct DictBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct DictBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> DictBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> DictBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_k_type(&mut self, k_type: MonoType) {
             self.fbb_
@@ -4226,7 +4329,7 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Dict::VT_V, v);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DictBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> DictBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             DictBuilder {
                 fbb_: _fbb,
@@ -4412,7 +4515,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -4423,8 +4526,13 @@ pub mod fbsemantic {
             Dynamic { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             _args: &'args DynamicArgs,
         ) -> flatbuffers::WIPOffset<Dynamic<'bldr>> {
             let mut builder = DynamicBuilder::new(_fbb);
@@ -4451,13 +4559,15 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct DynamicBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct DynamicBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> DynamicBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> DynamicBuilder<'a, 'b, A> {
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DynamicBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> DynamicBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             DynamicBuilder {
                 fbb_: _fbb,
@@ -4489,7 +4599,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -4506,8 +4616,13 @@ pub mod fbsemantic {
             Argument { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ArgumentArgs<'args>,
         ) -> flatbuffers::WIPOffset<Argument<'bldr>> {
             let mut builder = ArgumentBuilder::new(_fbb);
@@ -4765,11 +4880,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ArgumentBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ArgumentBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ArgumentBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ArgumentBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_name(&mut self, name: flatbuffers::WIPOffset<&'b str>) {
             self.fbb_
@@ -4795,7 +4910,9 @@ pub mod fbsemantic {
                 .push_slot::<bool>(Argument::VT_OPTIONAL, optional, false);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ArgumentBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ArgumentBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ArgumentBuilder {
                 fbb_: _fbb,
@@ -4907,7 +5024,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -4920,8 +5037,13 @@ pub mod fbsemantic {
             Concrete { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ConcreteArgs<'args>,
         ) -> flatbuffers::WIPOffset<Concrete<'bldr>> {
             let mut builder = ConcreteBuilder::new(_fbb);
@@ -4966,18 +5088,20 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ConcreteBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ConcreteBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ConcreteBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ConcreteBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_id(&mut self, id: flatbuffers::WIPOffset<&'b str>) {
             self.fbb_
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Concrete::VT_ID, id);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ConcreteBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ConcreteBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ConcreteBuilder {
                 fbb_: _fbb,
@@ -5010,7 +5134,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -5026,8 +5150,13 @@ pub mod fbsemantic {
             Prop { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args PropArgs,
         ) -> flatbuffers::WIPOffset<Prop<'bldr>> {
             let mut builder = PropBuilder::new(_fbb);
@@ -5315,11 +5444,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct PropBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct PropBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> PropBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> PropBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_k_type(&mut self, k_type: RecordLabel) {
             self.fbb_
@@ -5341,7 +5470,7 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Prop::VT_V, v);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PropBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> PropBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             PropBuilder {
                 fbb_: _fbb,
@@ -5477,7 +5606,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -5493,8 +5622,13 @@ pub mod fbsemantic {
             PolyType { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args PolyTypeArgs<'args>,
         ) -> flatbuffers::WIPOffset<PolyType<'bldr>> {
             let mut builder = PolyTypeBuilder::new(_fbb);
@@ -5754,11 +5888,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct PolyTypeBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct PolyTypeBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> PolyTypeBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> PolyTypeBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_vars(
             &mut self,
@@ -5790,7 +5924,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(PolyType::VT_EXPR, expr);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PolyTypeBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> PolyTypeBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             PolyTypeBuilder {
                 fbb_: _fbb,
@@ -5901,7 +6037,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -5915,8 +6051,13 @@ pub mod fbsemantic {
             Constraint { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ConstraintArgs<'args>,
         ) -> flatbuffers::WIPOffset<Constraint<'bldr>> {
             let mut builder = ConstraintBuilder::new(_fbb);
@@ -5978,11 +6119,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ConstraintBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ConstraintBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ConstraintBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ConstraintBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_tvar(&mut self, tvar: flatbuffers::WIPOffset<Var<'b>>) {
             self.fbb_
@@ -5994,7 +6135,9 @@ pub mod fbsemantic {
                 .push_slot::<Kind>(Constraint::VT_KIND, kind, Kind::Addable);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ConstraintBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ConstraintBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ConstraintBuilder {
                 fbb_: _fbb,
@@ -6028,7 +6171,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -6041,8 +6184,13 @@ pub mod fbsemantic {
             PackageList { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args PackageListArgs<'args>,
         ) -> flatbuffers::WIPOffset<PackageList<'bldr>> {
             let mut builder = PackageListBuilder::new(_fbb);
@@ -6096,11 +6244,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct PackageListBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct PackageListBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> PackageListBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> PackageListBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_packages(
             &mut self,
@@ -6112,7 +6260,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(PackageList::VT_PACKAGES, packages);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PackageListBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> PackageListBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             PackageListBuilder {
                 fbb_: _fbb,
@@ -6145,7 +6295,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -6160,8 +6310,13 @@ pub mod fbsemantic {
             Package { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args PackageArgs<'args>,
         ) -> flatbuffers::WIPOffset<Package<'bldr>> {
             let mut builder = PackageBuilder::new(_fbb);
@@ -6255,11 +6410,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct PackageBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct PackageBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> PackageBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> PackageBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -6281,7 +6436,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Package::VT_FILES, files);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PackageBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> PackageBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             PackageBuilder {
                 fbb_: _fbb,
@@ -6316,7 +6473,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -6332,8 +6489,13 @@ pub mod fbsemantic {
             File { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args FileArgs<'args>,
         ) -> flatbuffers::WIPOffset<File<'bldr>> {
             let mut builder = FileBuilder::new(_fbb);
@@ -6456,11 +6618,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct FileBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct FileBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> FileBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> FileBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -6495,7 +6657,7 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(File::VT_BODY, body);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> FileBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> FileBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             FileBuilder {
                 fbb_: _fbb,
@@ -6531,7 +6693,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -6545,8 +6707,13 @@ pub mod fbsemantic {
             PackageClause { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args PackageClauseArgs<'args>,
         ) -> flatbuffers::WIPOffset<PackageClause<'bldr>> {
             let mut builder = PackageClauseBuilder::new(_fbb);
@@ -6620,11 +6787,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct PackageClauseBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct PackageClauseBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> PackageClauseBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> PackageClauseBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -6643,8 +6810,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> PackageClauseBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> PackageClauseBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             PackageClauseBuilder {
                 fbb_: _fbb,
@@ -6678,7 +6845,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -6693,8 +6860,13 @@ pub mod fbsemantic {
             ImportDeclaration { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ImportDeclarationArgs<'args>,
         ) -> flatbuffers::WIPOffset<ImportDeclaration<'bldr>> {
             let mut builder = ImportDeclarationBuilder::new(_fbb);
@@ -6793,11 +6965,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ImportDeclarationBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ImportDeclarationBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ImportDeclarationBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ImportDeclarationBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -6824,8 +6996,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> ImportDeclarationBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ImportDeclarationBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ImportDeclarationBuilder {
                 fbb_: _fbb,
@@ -6860,7 +7032,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -6876,8 +7048,13 @@ pub mod fbsemantic {
             SourceLocation { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args SourceLocationArgs<'args>,
         ) -> flatbuffers::WIPOffset<SourceLocation<'bldr>> {
             let mut builder = SourceLocationBuilder::new(_fbb);
@@ -6970,11 +7147,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct SourceLocationBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct SourceLocationBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> SourceLocationBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> SourceLocationBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_file(&mut self, file: flatbuffers::WIPOffset<&'b str>) {
             self.fbb_
@@ -6997,8 +7174,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> SourceLocationBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> SourceLocationBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             SourceLocationBuilder {
                 fbb_: _fbb,
@@ -7034,7 +7211,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -7048,8 +7225,13 @@ pub mod fbsemantic {
             WrappedStatement { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args WrappedStatementArgs,
         ) -> flatbuffers::WIPOffset<WrappedStatement<'bldr>> {
             let mut builder = WrappedStatementBuilder::new(_fbb);
@@ -7230,11 +7412,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct WrappedStatementBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct WrappedStatementBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> WrappedStatementBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> WrappedStatementBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_statement_type(&mut self, statement_type: Statement) {
             self.fbb_.push_slot::<Statement>(
@@ -7255,8 +7437,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> WrappedStatementBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> WrappedStatementBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             WrappedStatementBuilder {
                 fbb_: _fbb,
@@ -7365,7 +7547,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -7380,8 +7562,13 @@ pub mod fbsemantic {
             OptionStatement { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args OptionStatementArgs<'args>,
         ) -> flatbuffers::WIPOffset<OptionStatement<'bldr>> {
             let mut builder = OptionStatementBuilder::new(_fbb);
@@ -7501,11 +7688,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct OptionStatementBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct OptionStatementBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> OptionStatementBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> OptionStatementBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -7534,8 +7721,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> OptionStatementBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> OptionStatementBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             OptionStatementBuilder {
                 fbb_: _fbb,
@@ -7595,7 +7782,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -7609,8 +7796,13 @@ pub mod fbsemantic {
             BuiltinStatement { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args BuiltinStatementArgs<'args>,
         ) -> flatbuffers::WIPOffset<BuiltinStatement<'bldr>> {
             let mut builder = BuiltinStatementBuilder::new(_fbb);
@@ -7680,11 +7872,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct BuiltinStatementBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct BuiltinStatementBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> BuiltinStatementBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> BuiltinStatementBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -7703,8 +7895,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> BuiltinStatementBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> BuiltinStatementBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             BuiltinStatementBuilder {
                 fbb_: _fbb,
@@ -7738,7 +7930,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -7752,8 +7944,13 @@ pub mod fbsemantic {
             TestStatement { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args TestStatementArgs<'args>,
         ) -> flatbuffers::WIPOffset<TestStatement<'bldr>> {
             let mut builder = TestStatementBuilder::new(_fbb);
@@ -7830,11 +8027,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct TestStatementBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct TestStatementBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> TestStatementBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> TestStatementBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -7856,8 +8053,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> TestStatementBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> TestStatementBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             TestStatementBuilder {
                 fbb_: _fbb,
@@ -7891,7 +8088,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -7906,8 +8103,13 @@ pub mod fbsemantic {
             ExpressionStatement { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ExpressionStatementArgs<'args>,
         ) -> flatbuffers::WIPOffset<ExpressionStatement<'bldr>> {
             let mut builder = ExpressionStatementBuilder::new(_fbb);
@@ -8332,11 +8534,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ExpressionStatementBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ExpressionStatementBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ExpressionStatementBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ExpressionStatementBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -8365,8 +8567,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> ExpressionStatementBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ExpressionStatementBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ExpressionStatementBuilder {
                 fbb_: _fbb,
@@ -8616,7 +8818,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -8631,8 +8833,13 @@ pub mod fbsemantic {
             ReturnStatement { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ReturnStatementArgs<'args>,
         ) -> flatbuffers::WIPOffset<ReturnStatement<'bldr>> {
             let mut builder = ReturnStatementBuilder::new(_fbb);
@@ -9054,11 +9261,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ReturnStatementBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ReturnStatementBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ReturnStatementBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ReturnStatementBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -9087,8 +9294,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> ReturnStatementBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ReturnStatementBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ReturnStatementBuilder {
                 fbb_: _fbb,
@@ -9338,7 +9545,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -9355,8 +9562,13 @@ pub mod fbsemantic {
             NativeVariableAssignment { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args NativeVariableAssignmentArgs<'args>,
         ) -> flatbuffers::WIPOffset<NativeVariableAssignment<'bldr>> {
             let mut builder = NativeVariableAssignmentBuilder::new(_fbb);
@@ -9817,11 +10029,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct NativeVariableAssignmentBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct NativeVariableAssignmentBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> NativeVariableAssignmentBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> NativeVariableAssignmentBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -9863,8 +10075,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> NativeVariableAssignmentBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> NativeVariableAssignmentBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             NativeVariableAssignmentBuilder {
                 fbb_: _fbb,
@@ -10116,7 +10328,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -10132,8 +10344,13 @@ pub mod fbsemantic {
             MemberAssignment { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args MemberAssignmentArgs<'args>,
         ) -> flatbuffers::WIPOffset<MemberAssignment<'bldr>> {
             let mut builder = MemberAssignmentBuilder::new(_fbb);
@@ -10574,11 +10791,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct MemberAssignmentBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct MemberAssignmentBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> MemberAssignmentBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> MemberAssignmentBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -10610,8 +10827,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> MemberAssignmentBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> MemberAssignmentBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             MemberAssignmentBuilder {
                 fbb_: _fbb,
@@ -10862,7 +11079,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -10876,8 +11093,13 @@ pub mod fbsemantic {
             WrappedExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args WrappedExpressionArgs,
         ) -> flatbuffers::WIPOffset<WrappedExpression<'bldr>> {
             let mut builder = WrappedExpressionBuilder::new(_fbb);
@@ -11283,11 +11505,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct WrappedExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct WrappedExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> WrappedExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> WrappedExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_expression_type(&mut self, expression_type: Expression) {
             self.fbb_.push_slot::<Expression>(
@@ -11308,8 +11530,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> WrappedExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> WrappedExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             WrappedExpressionBuilder {
                 fbb_: _fbb,
@@ -11558,7 +11780,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -11572,8 +11794,13 @@ pub mod fbsemantic {
             StringExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args StringExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<StringExpression<'bldr>> {
             let mut builder = StringExpressionBuilder::new(_fbb);
@@ -11653,11 +11880,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct StringExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct StringExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> StringExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> StringExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -11678,8 +11905,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> StringExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> StringExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             StringExpressionBuilder {
                 fbb_: _fbb,
@@ -11713,7 +11940,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -11729,8 +11956,13 @@ pub mod fbsemantic {
             StringExpressionPart { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args StringExpressionPartArgs<'args>,
         ) -> flatbuffers::WIPOffset<StringExpressionPart<'bldr>> {
             let mut builder = StringExpressionPartBuilder::new(_fbb);
@@ -12183,11 +12415,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct StringExpressionPartBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct StringExpressionPartBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> StringExpressionPartBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> StringExpressionPartBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -12226,8 +12458,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> StringExpressionPartBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> StringExpressionPartBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             StringExpressionPartBuilder {
                 fbb_: _fbb,
@@ -12481,7 +12713,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -12497,8 +12729,13 @@ pub mod fbsemantic {
             ArrayExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ArrayExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<ArrayExpression<'bldr>> {
             let mut builder = ArrayExpressionBuilder::new(_fbb);
@@ -12759,11 +12996,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ArrayExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ArrayExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ArrayExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ArrayExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -12796,8 +13033,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> ArrayExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ArrayExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ArrayExpressionBuilder {
                 fbb_: _fbb,
@@ -12908,7 +13145,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -12924,8 +13161,13 @@ pub mod fbsemantic {
             DictExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args DictExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<DictExpression<'bldr>> {
             let mut builder = DictExpressionBuilder::new(_fbb);
@@ -13185,11 +13427,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct DictExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct DictExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> DictExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> DictExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -13222,8 +13464,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> DictExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> DictExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             DictExpressionBuilder {
                 fbb_: _fbb,
@@ -13334,7 +13576,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -13350,8 +13592,13 @@ pub mod fbsemantic {
             DictItem { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args DictItemArgs,
         ) -> flatbuffers::WIPOffset<DictItem<'bldr>> {
             let mut builder = DictItemBuilder::new(_fbb);
@@ -14127,11 +14374,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct DictItemBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct DictItemBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> DictItemBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> DictItemBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_key_type(&mut self, key_type: Expression) {
             self.fbb_
@@ -14153,7 +14400,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(DictItem::VT_VAL, val);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DictItemBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> DictItemBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             DictItemBuilder {
                 fbb_: _fbb,
@@ -14619,7 +14868,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -14637,8 +14886,13 @@ pub mod fbsemantic {
             FunctionExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args FunctionExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<FunctionExpression<'bldr>> {
             let mut builder = FunctionExpressionBuilder::new(_fbb);
@@ -14938,11 +15192,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct FunctionExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct FunctionExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> FunctionExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> FunctionExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -14996,8 +15250,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> FunctionExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> FunctionExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             FunctionExpressionBuilder {
                 fbb_: _fbb,
@@ -15110,7 +15364,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -15127,8 +15381,13 @@ pub mod fbsemantic {
             FunctionParameter { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args FunctionParameterArgs<'args>,
         ) -> flatbuffers::WIPOffset<FunctionParameter<'bldr>> {
             let mut builder = FunctionParameterBuilder::new(_fbb);
@@ -15583,11 +15842,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct FunctionParameterBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct FunctionParameterBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> FunctionParameterBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> FunctionParameterBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -15629,8 +15888,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> FunctionParameterBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> FunctionParameterBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             FunctionParameterBuilder {
                 fbb_: _fbb,
@@ -15882,7 +16141,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -15896,8 +16155,13 @@ pub mod fbsemantic {
             Block { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args BlockArgs<'args>,
         ) -> flatbuffers::WIPOffset<Block<'bldr>> {
             let mut builder = BlockBuilder::new(_fbb);
@@ -15974,11 +16238,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct BlockBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct BlockBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> BlockBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> BlockBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -15995,7 +16259,7 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Block::VT_BODY, body);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> BlockBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> BlockBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             BlockBuilder {
                 fbb_: _fbb,
@@ -16029,7 +16293,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -16049,8 +16313,13 @@ pub mod fbsemantic {
             BinaryExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args BinaryExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<BinaryExpression<'bldr>> {
             let mut builder = BinaryExpressionBuilder::new(_fbb);
@@ -17012,11 +17281,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct BinaryExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct BinaryExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> BinaryExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> BinaryExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -17074,8 +17343,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> BinaryExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> BinaryExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             BinaryExpressionBuilder {
                 fbb_: _fbb,
@@ -17620,7 +17889,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -17640,8 +17909,13 @@ pub mod fbsemantic {
             CallExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args CallExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<CallExpression<'bldr>> {
             let mut builder = CallExpressionBuilder::new(_fbb);
@@ -18608,11 +18882,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct CallExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct CallExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> CallExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> CallExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -18671,8 +18945,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> CallExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> CallExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             CallExpressionBuilder {
                 fbb_: _fbb,
@@ -19217,7 +19491,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -19236,8 +19510,13 @@ pub mod fbsemantic {
             ConditionalExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ConditionalExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<ConditionalExpression<'bldr>> {
             let mut builder = ConditionalExpressionBuilder::new(_fbb);
@@ -20411,11 +20690,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ConditionalExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ConditionalExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ConditionalExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ConditionalExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -20477,8 +20756,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> ConditionalExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ConditionalExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ConditionalExpressionBuilder {
                 fbb_: _fbb,
@@ -21162,7 +21441,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -21182,8 +21461,13 @@ pub mod fbsemantic {
             LogicalExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args LogicalExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<LogicalExpression<'bldr>> {
             let mut builder = LogicalExpressionBuilder::new(_fbb);
@@ -22145,11 +22429,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct LogicalExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct LogicalExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> LogicalExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> LogicalExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -22207,8 +22491,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> LogicalExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> LogicalExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             LogicalExpressionBuilder {
                 fbb_: _fbb,
@@ -22753,7 +23037,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -22771,8 +23055,13 @@ pub mod fbsemantic {
             MemberExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args MemberExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<MemberExpression<'bldr>> {
             let mut builder = MemberExpressionBuilder::new(_fbb);
@@ -23359,11 +23648,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct MemberExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct MemberExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> MemberExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> MemberExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -23407,8 +23696,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> MemberExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> MemberExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             MemberExpressionBuilder {
                 fbb_: _fbb,
@@ -23736,7 +24025,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -23755,8 +24044,13 @@ pub mod fbsemantic {
             IndexExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args IndexExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<IndexExpression<'bldr>> {
             let mut builder = IndexExpressionBuilder::new(_fbb);
@@ -24700,11 +24994,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct IndexExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct IndexExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> IndexExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> IndexExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -24751,8 +25045,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> IndexExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> IndexExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             IndexExpressionBuilder {
                 fbb_: _fbb,
@@ -25296,7 +25590,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -25313,8 +25607,13 @@ pub mod fbsemantic {
             ObjectExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ObjectExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<ObjectExpression<'bldr>> {
             let mut builder = ObjectExpressionBuilder::new(_fbb);
@@ -25597,11 +25896,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ObjectExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ObjectExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ObjectExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ObjectExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -25645,8 +25944,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> ObjectExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ObjectExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ObjectExpressionBuilder {
                 fbb_: _fbb,
@@ -25758,7 +26057,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -25776,8 +26075,13 @@ pub mod fbsemantic {
             UnaryExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args UnaryExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<UnaryExpression<'bldr>> {
             let mut builder = UnaryExpressionBuilder::new(_fbb);
@@ -26366,11 +26670,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct UnaryExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct UnaryExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> UnaryExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> UnaryExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -26417,8 +26721,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> UnaryExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> UnaryExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             UnaryExpressionBuilder {
                 fbb_: _fbb,
@@ -26746,7 +27050,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -26762,8 +27066,13 @@ pub mod fbsemantic {
             Property { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args PropertyArgs<'args>,
         ) -> flatbuffers::WIPOffset<Property<'bldr>> {
             let mut builder = PropertyBuilder::new(_fbb);
@@ -27198,11 +27507,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct PropertyBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct PropertyBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> PropertyBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> PropertyBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -27227,7 +27536,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Property::VT_VALUE, value);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PropertyBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> PropertyBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             PropertyBuilder {
                 fbb_: _fbb,
@@ -27478,7 +27789,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -27494,8 +27805,13 @@ pub mod fbsemantic {
             IdentifierExpression { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args IdentifierExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<IdentifierExpression<'bldr>> {
             let mut builder = IdentifierExpressionBuilder::new(_fbb);
@@ -27746,11 +28062,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct IdentifierExpressionBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct IdentifierExpressionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> IdentifierExpressionBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> IdentifierExpressionBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -27779,8 +28095,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> IdentifierExpressionBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> IdentifierExpressionBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             IdentifierExpressionBuilder {
                 fbb_: _fbb,
@@ -27891,7 +28207,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -27905,8 +28221,13 @@ pub mod fbsemantic {
             Identifier { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args IdentifierArgs<'args>,
         ) -> flatbuffers::WIPOffset<Identifier<'bldr>> {
             let mut builder = IdentifierBuilder::new(_fbb);
@@ -27973,11 +28294,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct IdentifierBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct IdentifierBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> IdentifierBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> IdentifierBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -27992,7 +28313,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(Identifier::VT_NAME, name);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> IdentifierBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> IdentifierBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             IdentifierBuilder {
                 fbb_: _fbb,
@@ -28026,7 +28349,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -28040,8 +28363,13 @@ pub mod fbsemantic {
             BooleanLiteral { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args BooleanLiteralArgs<'args>,
         ) -> flatbuffers::WIPOffset<BooleanLiteral<'bldr>> {
             let mut builder = BooleanLiteralBuilder::new(_fbb);
@@ -28110,11 +28438,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct BooleanLiteralBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct BooleanLiteralBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> BooleanLiteralBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> BooleanLiteralBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -28130,8 +28458,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> BooleanLiteralBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> BooleanLiteralBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             BooleanLiteralBuilder {
                 fbb_: _fbb,
@@ -28165,7 +28493,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -28179,8 +28507,13 @@ pub mod fbsemantic {
             DateTimeLiteral { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args DateTimeLiteralArgs<'args>,
         ) -> flatbuffers::WIPOffset<DateTimeLiteral<'bldr>> {
             let mut builder = DateTimeLiteralBuilder::new(_fbb);
@@ -28250,11 +28583,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct DateTimeLiteralBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct DateTimeLiteralBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> DateTimeLiteralBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> DateTimeLiteralBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -28270,8 +28603,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> DateTimeLiteralBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> DateTimeLiteralBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             DateTimeLiteralBuilder {
                 fbb_: _fbb,
@@ -28305,7 +28638,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -28320,8 +28653,13 @@ pub mod fbsemantic {
             Time { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args TimeArgs,
         ) -> flatbuffers::WIPOffset<Time<'bldr>> {
             let mut builder = TimeBuilder::new(_fbb);
@@ -28385,11 +28723,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct TimeBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct TimeBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> TimeBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> TimeBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_secs(&mut self, secs: i64) {
             self.fbb_.push_slot::<i64>(Time::VT_SECS, secs, 0);
@@ -28403,7 +28741,7 @@ pub mod fbsemantic {
             self.fbb_.push_slot::<i32>(Time::VT_OFFSET, offset, 0);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> TimeBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> TimeBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             TimeBuilder {
                 fbb_: _fbb,
@@ -28438,7 +28776,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -28453,8 +28791,13 @@ pub mod fbsemantic {
             Duration { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args DurationArgs,
         ) -> flatbuffers::WIPOffset<Duration<'bldr>> {
             let mut builder = DurationBuilder::new(_fbb);
@@ -28526,11 +28869,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct DurationBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct DurationBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> DurationBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> DurationBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_months(&mut self, months: i64) {
             self.fbb_.push_slot::<i64>(Duration::VT_MONTHS, months, 0);
@@ -28546,7 +28889,9 @@ pub mod fbsemantic {
                 .push_slot::<bool>(Duration::VT_NEGATIVE, negative, false);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DurationBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> DurationBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             DurationBuilder {
                 fbb_: _fbb,
@@ -28581,7 +28926,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -28595,8 +28940,13 @@ pub mod fbsemantic {
             DurationLiteral { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args DurationLiteralArgs<'args>,
         ) -> flatbuffers::WIPOffset<DurationLiteral<'bldr>> {
             let mut builder = DurationLiteralBuilder::new(_fbb);
@@ -28675,11 +29025,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct DurationLiteralBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct DurationLiteralBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> DurationLiteralBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> DurationLiteralBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -28700,8 +29050,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> DurationLiteralBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> DurationLiteralBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             DurationLiteralBuilder {
                 fbb_: _fbb,
@@ -28735,7 +29085,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -28749,8 +29099,13 @@ pub mod fbsemantic {
             IntegerLiteral { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args IntegerLiteralArgs<'args>,
         ) -> flatbuffers::WIPOffset<IntegerLiteral<'bldr>> {
             let mut builder = IntegerLiteralBuilder::new(_fbb);
@@ -28819,11 +29174,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct IntegerLiteralBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct IntegerLiteralBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> IntegerLiteralBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> IntegerLiteralBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -28839,8 +29194,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> IntegerLiteralBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> IntegerLiteralBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             IntegerLiteralBuilder {
                 fbb_: _fbb,
@@ -28874,7 +29229,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -28888,8 +29243,13 @@ pub mod fbsemantic {
             FloatLiteral { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args FloatLiteralArgs<'args>,
         ) -> flatbuffers::WIPOffset<FloatLiteral<'bldr>> {
             let mut builder = FloatLiteralBuilder::new(_fbb);
@@ -28955,11 +29315,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct FloatLiteralBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct FloatLiteralBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> FloatLiteralBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> FloatLiteralBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -28975,8 +29335,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> FloatLiteralBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> FloatLiteralBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             FloatLiteralBuilder {
                 fbb_: _fbb,
@@ -29010,7 +29370,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -29024,8 +29384,13 @@ pub mod fbsemantic {
             RegexpLiteral { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args RegexpLiteralArgs<'args>,
         ) -> flatbuffers::WIPOffset<RegexpLiteral<'bldr>> {
             let mut builder = RegexpLiteralBuilder::new(_fbb);
@@ -29095,11 +29460,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct RegexpLiteralBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct RegexpLiteralBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> RegexpLiteralBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> RegexpLiteralBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -29115,8 +29480,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> RegexpLiteralBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> RegexpLiteralBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             RegexpLiteralBuilder {
                 fbb_: _fbb,
@@ -29150,7 +29515,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -29164,8 +29529,13 @@ pub mod fbsemantic {
             StringLiteral { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args StringLiteralArgs<'args>,
         ) -> flatbuffers::WIPOffset<StringLiteral<'bldr>> {
             let mut builder = StringLiteralBuilder::new(_fbb);
@@ -29235,11 +29605,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct StringLiteralBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct StringLiteralBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> StringLiteralBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> StringLiteralBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -29255,8 +29625,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> StringLiteralBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> StringLiteralBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             StringLiteralBuilder {
                 fbb_: _fbb,
@@ -29290,7 +29660,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -29304,8 +29674,13 @@ pub mod fbsemantic {
             UnsignedIntegerLiteral { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args UnsignedIntegerLiteralArgs<'args>,
         ) -> flatbuffers::WIPOffset<UnsignedIntegerLiteral<'bldr>> {
             let mut builder = UnsignedIntegerLiteralBuilder::new(_fbb);
@@ -29374,11 +29749,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct UnsignedIntegerLiteralBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct UnsignedIntegerLiteralBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> UnsignedIntegerLiteralBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> UnsignedIntegerLiteralBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
@@ -29394,8 +29769,8 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> UnsignedIntegerLiteralBuilder<'a, 'b> {
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> UnsignedIntegerLiteralBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             UnsignedIntegerLiteralBuilder {
                 fbb_: _fbb,
@@ -29429,7 +29804,7 @@ pub mod fbsemantic {
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table::new(buf, loc),
+                _tab: unsafe { flatbuffers::Table::new(buf, loc) },
             }
         }
     }
@@ -29443,8 +29818,13 @@ pub mod fbsemantic {
             Module { _tab: table }
         }
         #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        pub fn create<
+            'bldr: 'args,
+            'args: 'mut_bldr,
+            'mut_bldr,
+            A: flatbuffers::Allocator + 'bldr,
+        >(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
             args: &'args ModuleArgs<'args>,
         ) -> flatbuffers::WIPOffset<Module<'bldr>> {
             let mut builder = ModuleBuilder::new(_fbb);
@@ -29511,11 +29891,11 @@ pub mod fbsemantic {
         }
     }
 
-    pub struct ModuleBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub struct ModuleBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ModuleBuilder<'a, 'b> {
+    impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ModuleBuilder<'a, 'b, A> {
         #[inline]
         pub fn add_polytype(&mut self, polytype: flatbuffers::WIPOffset<PolyType<'b>>) {
             self.fbb_
@@ -29530,7 +29910,9 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<Package>>(Module::VT_CODE, code);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ModuleBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+        ) -> ModuleBuilder<'a, 'b, A> {
             let start = _fbb.start_table();
             ModuleBuilder {
                 fbb_: _fbb,
@@ -29605,26 +29987,26 @@ pub mod fbsemantic {
     /// # Safety
     /// Callers must trust the given bytes do indeed contain a valid `Package`.
     pub unsafe fn root_as_package_unchecked(buf: &[u8]) -> Package {
-        flatbuffers::root_unchecked::<Package>(buf)
+        unsafe { flatbuffers::root_unchecked::<Package>(buf) }
     }
     #[inline]
     /// Assumes, without verification, that a buffer of bytes contains a size prefixed Package and returns it.
     /// # Safety
     /// Callers must trust the given bytes do indeed contain a valid size prefixed `Package`.
     pub unsafe fn size_prefixed_root_as_package_unchecked(buf: &[u8]) -> Package {
-        flatbuffers::size_prefixed_root_unchecked::<Package>(buf)
+        unsafe { flatbuffers::size_prefixed_root_unchecked::<Package>(buf) }
     }
     #[inline]
-    pub fn finish_package_buffer<'a, 'b>(
-        fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub fn finish_package_buffer<'a, 'b, A: flatbuffers::Allocator + 'a>(
+        fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         root: flatbuffers::WIPOffset<Package<'a>>,
     ) {
         fbb.finish(root, None);
     }
 
     #[inline]
-    pub fn finish_size_prefixed_package_buffer<'a, 'b>(
-        fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    pub fn finish_size_prefixed_package_buffer<'a, 'b, A: flatbuffers::Allocator + 'a>(
+        fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
         root: flatbuffers::WIPOffset<Package<'a>>,
     ) {
         fbb.finish_size_prefixed(root, None);

@@ -2,7 +2,7 @@
 
 #![allow(clippy::undocumented_unsafe_blocks)]
 
-#[allow(clippy::all, missing_docs)]
+#[allow(clippy::all, missing_docs, non_upper_case_globals)]
 pub mod semantic_generated;
 #[allow(missing_docs)]
 pub mod types;
