@@ -60,7 +60,7 @@ func (p ASTPkg) GetError(options Options) error {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
 		str := C.GoString(cstr)
-		return errors.Newf(codes.Invalid, str)
+		return errors.Newf(codes.Invalid, "%s", str)
 	}
 	return nil
 }
