@@ -22,5 +22,6 @@ var zoneSources = []string{
 	"/usr/share/zoneinfo/",
 	"/usr/share/lib/zoneinfo/",
 	"/usr/lib/locale/TZ/",
+	//lint:ignore SA1019 GOROOT() is ok here because this is used as a fallback only
 	runtime.GOROOT() + "/lib/time/zoneinfo.zip",
 }
