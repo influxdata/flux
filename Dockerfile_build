@@ -33,8 +33,8 @@ ENV RUSTUP_HOME=/usr/local/rustup \
     PATH=/usr/local/cargo/bin:/usr/local/bin:/usr/local/ragel7/bin:$PATH
 RUN rustup component add rustfmt clippy && \
     # Use sccache rustc wrapper for friendly build caching
-    cargo install sccache && \
-    cargo install wasm-pack && \
+    cargo install sccache --locked && \
+    cargo install wasm-pack --locked && \
     rustup component add rust-std --target wasm32-unknown-unknown
 # This is defined separately, so it doesn't attempt to use sccache until it is
 # actually installed.
