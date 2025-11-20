@@ -23,3 +23,5 @@ cmake-build-debug
 # include any directories that share the same name.
 **/flux
 !**/flux/
+flatbuffers-*/
+v*.tar.gz
