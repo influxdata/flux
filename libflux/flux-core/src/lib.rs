@@ -1,4 +1,5 @@
-#![cfg_attr(feature = "strict", deny(warnings, missing_docs), allow(unknown_lints, mismatched_lifetime_syntaxes))]
+#![cfg_attr(feature = "strict", deny(warnings, missing_docs))]
+#![cfg_attr(feature = "strict", allow(unknown_lints, mismatched_lifetime_syntaxes))]
 #![allow(
     clippy::needless_update, //
     clippy::identity_op, // Warns on `1 * YEARS` which seems clearer than `YEARS`
