@@ -551,9 +551,9 @@ func TestRunEndEncodedString(t *testing.T) {
 		defer values.Release()
 
 		reb := apachearray.NewInt32Builder(mem)
-		reb.Append(3)  // First run ends at index 3 (3 "hello"s)
-		reb.Append(5)  // Second run ends at index 5 (2 "world"s)
-		reb.Append(8)  // Third run ends at index 8 (3 nulls)
+		reb.Append(3) // First run ends at index 3 (3 "hello"s)
+		reb.Append(5) // Second run ends at index 5 (2 "world"s)
+		reb.Append(8) // Third run ends at index 8 (3 nulls)
 		runEnds := reb.NewArray()
 		defer runEnds.Release()
 
@@ -689,9 +689,9 @@ func TestRunEndEncodedString(t *testing.T) {
 		defer values.Release()
 
 		reb := apachearray.NewInt32Builder(mem)
-		reb.Append(2)  // "foo" x2
-		reb.Append(3)  // null x1
-		reb.Append(5)  // "bar" x2
+		reb.Append(2) // "foo" x2
+		reb.Append(3) // null x1
+		reb.Append(5) // "bar" x2
 		runEnds := reb.NewArray()
 		defer runEnds.Release()
 
@@ -717,9 +717,9 @@ func TestRunEndEncodedString(t *testing.T) {
 		defer values.Release()
 
 		reb := apachearray.NewInt32Builder(mem)
-		reb.Append(2)  // "short" x2
-		reb.Append(4)  // "longer string" x2
-		reb.Append(5)  // null x1
+		reb.Append(2) // "short" x2
+		reb.Append(4) // "longer string" x2
+		reb.Append(5) // null x1
 		runEnds := reb.NewArray()
 		defer runEnds.Release()
 
