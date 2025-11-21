@@ -1705,4 +1705,5 @@ where
 // The tests code exports a few helpers for writing AST related tests.
 // We make it public so other tests can consume those helpers.
 #[cfg(test)]
+#[allow(missing_docs)]
 pub mod tests;
