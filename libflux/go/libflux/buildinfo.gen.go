@@ -13,9 +13,9 @@ package libflux
 //
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "5a78baae5117942f6df4888346bb4e6d5cba0cd401198c2a391de265bec1a1cd",
+	"libflux/Cargo.lock":                                                                          "c793dddc0de9a4df60c5cf7d62f135b9dc53cbaf6eff4ac64bc478d9840967f6",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                                "6900c5330cd237b71f112893f989a392ab484baf6f0aa88dfe1e38a8878c17c5",
+	"libflux/flux-core/Cargo.toml":                                                                "01c24816128ff0a63456dc3158cc5ffd9924878f822e0dbd75985543efb8633d",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "4a6511e9ccc9718eada01b29544bd4d5c324ae87a85906c25ad7193a890f86fc",
 	"libflux/flux-core/src/ast/mod.rs":                                                            "00fac7d9da0dfb0475a994b208b9e3d97ad2199a8dcc5bac941e2376c94b5f6b",
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "4b134ff5e48cb1187c4a463985c333f486aa0416a45ccb2a624ba9d6ff1751b6",
@@ -41,8 +41,8 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/check.rs":                                                     "bbe290ca4bdd9bf2a79c905e30ed8e7cacc1e86e42bf2ca9f2d84bbbdcbde302",
 	"libflux/flux-core/src/semantic/convert.rs":                                                   "6801a6f21107d8fa1f7125966451b4dde008732a5f29a319c943d9bd026ba47f",
 	"libflux/flux-core/src/semantic/env.rs":                                                       "0d6295a88dae8eaaed12ee20a8d218616683e8d45a776966e0cab02be2760fd0",
-	"libflux/flux-core/src/semantic/flatbuffers/mod.rs":                                           "49ff0c257a8382a09d9716ab32b1ce9a2374bc2bbd2067f0886f114a87357d20",
-	"libflux/flux-core/src/semantic/flatbuffers/semantic_generated.rs":                            "295c79c5d0c9c9054d88f14ba30d5e3c80e4529973d7470457a1d8752b35ac8e",
+	"libflux/flux-core/src/semantic/flatbuffers/mod.rs":                                           "6c4dd88b4d13888528971e7be5d2458cc809410fadee5ad26012e9432b45351a",
+	"libflux/flux-core/src/semantic/flatbuffers/semantic_generated.rs":                            "45096917dacc6e72a0721fc3ad0e0f1e8c241e20fdfbc28f35269b2533fd567e",
 	"libflux/flux-core/src/semantic/flatbuffers/types.rs":                                         "d2a6774d7b90dbda92b1b6fef492bfbed6f0389bdb759bbc7cc3f48ab83c2cdd",
 	"libflux/flux-core/src/semantic/formatter/mod.rs":                                             "f9758877f7242998ed71f13ff71ed6e3fa3af497d2acf9df1853872b371bf12a",
 	"libflux/flux-core/src/semantic/fresh.rs":                                                     "18cb879ece9052682c9dda8117c23acd1f63c0325feaa1aef9a53db4f17d2d69",
@@ -59,7 +59,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/walk/mod.rs":                                                  "027f6d345ab58846bef1a8db26983e74143e880d5e82a500fd12642470b9d86a",
 	"libflux/flux-core/src/semantic/walk/test_utils.rs":                                           "043d5137ed626f1990c89f639e867e5b33a906f13c427313b497062f98215846",
 	"libflux/flux-core/src/semantic/walk/walk_mut.rs":                                             "3e9b8db77f35cfdee5ef7e24c1bc08845484f3cb7ecd50a82163b6ad46899662",
-	"libflux/flux/Cargo.toml":                                                                     "913a8be19540592efc631bcb2f8b5fd25747a7297f6c1073fec40ad0f5ec255e",
+	"libflux/flux/Cargo.toml":                                                                     "d565aed5ab705a926cfea3bfb057ac50a9cce2f6588e179087e8b0e48872dc78",
 	"libflux/flux/FLUXDOC.md":                                                                     "92e6dd8043bd87b4924e09aa28fb5346630aee1214de28ea2c8fc0687cad0785",
 	"libflux/flux/build.rs":                                                                       "31dcb1e825555e56b4d959244c4ea630b1d32ccddc1f8615620e0c23552d914f",
 	"libflux/flux/src/cffi.rs":                                                                    "573dd8ea708c3a41af03f8128c3e7ffa9e9a721eebb76f90a022165e50e0709e",

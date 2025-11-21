@@ -3,9 +3,8 @@
 package fbsemantic
 
 import (
-	"strconv"
-
 	flatbuffers "github.com/google/flatbuffers/go"
+	"strconv"
 )
 
 type MonoType byte
@@ -475,11 +474,19 @@ func GetRootAsFresher(buf []byte, offset flatbuffers.UOffsetT) *Fresher {
 	return x
 }
 
+func FinishFresherBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsFresher(buf []byte, offset flatbuffers.UOffsetT) *Fresher {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Fresher{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedFresherBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Fresher) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -524,11 +531,19 @@ func GetRootAsPackages(buf []byte, offset flatbuffers.UOffsetT) *Packages {
 	return x
 }
 
+func FinishPackagesBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsPackages(buf []byte, offset flatbuffers.UOffsetT) *Packages {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Packages{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedPackagesBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Packages) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -584,11 +599,19 @@ func GetRootAsPackageExports(buf []byte, offset flatbuffers.UOffsetT) *PackageEx
 	return x
 }
 
+func FinishPackageExportsBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsPackageExports(buf []byte, offset flatbuffers.UOffsetT) *PackageExports {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &PackageExports{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedPackageExportsBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *PackageExports) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -645,11 +668,19 @@ func GetRootAsTypeEnvironment(buf []byte, offset flatbuffers.UOffsetT) *TypeEnvi
 	return x
 }
 
+func FinishTypeEnvironmentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsTypeEnvironment(buf []byte, offset flatbuffers.UOffsetT) *TypeEnvironment {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &TypeEnvironment{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedTypeEnvironmentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *TypeEnvironment) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -705,11 +736,19 @@ func GetRootAsTypeAssignment(buf []byte, offset flatbuffers.UOffsetT) *TypeAssig
 	return x
 }
 
+func FinishTypeAssignmentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsTypeAssignment(buf []byte, offset flatbuffers.UOffsetT) *TypeAssignment {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &TypeAssignment{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedTypeAssignmentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *TypeAssignment) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -766,11 +805,19 @@ func GetRootAsMonoTypeHolder(buf []byte, offset flatbuffers.UOffsetT) *MonoTypeH
 	return x
 }
 
+func FinishMonoTypeHolderBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsMonoTypeHolder(buf []byte, offset flatbuffers.UOffsetT) *MonoTypeHolder {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &MonoTypeHolder{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedMonoTypeHolderBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *MonoTypeHolder) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -827,11 +874,19 @@ func GetRootAsVar(buf []byte, offset flatbuffers.UOffsetT) *Var {
 	return x
 }
 
+func FinishVarBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsVar(buf []byte, offset flatbuffers.UOffsetT) *Var {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Var{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedVarBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Var) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -876,11 +931,19 @@ func GetRootAsBasic(buf []byte, offset flatbuffers.UOffsetT) *Basic {
 	return x
 }
 
+func FinishBasicBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsBasic(buf []byte, offset flatbuffers.UOffsetT) *Basic {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Basic{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedBasicBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Basic) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -925,11 +988,19 @@ func GetRootAsCollection(buf []byte, offset flatbuffers.UOffsetT) *Collection {
 	return x
 }
 
+func FinishCollectionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsCollection(buf []byte, offset flatbuffers.UOffsetT) *Collection {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Collection{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedCollectionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Collection) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1001,11 +1072,19 @@ func GetRootAsStream(buf []byte, offset flatbuffers.UOffsetT) *Stream {
 	return x
 }
 
+func FinishStreamBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsStream(buf []byte, offset flatbuffers.UOffsetT) *Stream {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Stream{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedStreamBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Stream) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1062,11 +1141,19 @@ func GetRootAsRecord(buf []byte, offset flatbuffers.UOffsetT) *Record {
 	return x
 }
 
+func FinishRecordBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsRecord(buf []byte, offset flatbuffers.UOffsetT) *Record {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Record{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedRecordBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Record) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1138,11 +1225,19 @@ func GetRootAsFun(buf []byte, offset flatbuffers.UOffsetT) *Fun {
 	return x
 }
 
+func FinishFunBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsFun(buf []byte, offset flatbuffers.UOffsetT) *Fun {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Fun{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedFunBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Fun) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1225,11 +1320,19 @@ func GetRootAsDict(buf []byte, offset flatbuffers.UOffsetT) *Dict {
 	return x
 }
 
+func FinishDictBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsDict(buf []byte, offset flatbuffers.UOffsetT) *Dict {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Dict{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedDictBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Dict) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1313,11 +1416,19 @@ func GetRootAsDynamic(buf []byte, offset flatbuffers.UOffsetT) *Dynamic {
 	return x
 }
 
+func FinishDynamicBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsDynamic(buf []byte, offset flatbuffers.UOffsetT) *Dynamic {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Dynamic{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedDynamicBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Dynamic) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1347,11 +1458,19 @@ func GetRootAsArgument(buf []byte, offset flatbuffers.UOffsetT) *Argument {
 	return x
 }
 
+func FinishArgumentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsArgument(buf []byte, offset flatbuffers.UOffsetT) *Argument {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Argument{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedArgumentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Argument) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1449,11 +1568,19 @@ func GetRootAsConcrete(buf []byte, offset flatbuffers.UOffsetT) *Concrete {
 	return x
 }
 
+func FinishConcreteBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsConcrete(buf []byte, offset flatbuffers.UOffsetT) *Concrete {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Concrete{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedConcreteBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Concrete) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1494,11 +1621,19 @@ func GetRootAsProp(buf []byte, offset flatbuffers.UOffsetT) *Prop {
 	return x
 }
 
+func FinishPropBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsProp(buf []byte, offset flatbuffers.UOffsetT) *Prop {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Prop{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedPropBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Prop) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1582,11 +1717,19 @@ func GetRootAsPolyType(buf []byte, offset flatbuffers.UOffsetT) *PolyType {
 	return x
 }
 
+func FinishPolyTypeBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsPolyType(buf []byte, offset flatbuffers.UOffsetT) *PolyType {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &PolyType{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedPolyTypeBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *PolyType) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1695,11 +1838,19 @@ func GetRootAsConstraint(buf []byte, offset flatbuffers.UOffsetT) *Constraint {
 	return x
 }
 
+func FinishConstraintBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsConstraint(buf []byte, offset flatbuffers.UOffsetT) *Constraint {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Constraint{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedConstraintBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Constraint) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1760,11 +1911,19 @@ func GetRootAsPackageList(buf []byte, offset flatbuffers.UOffsetT) *PackageList 
 	return x
 }
 
+func FinishPackageListBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsPackageList(buf []byte, offset flatbuffers.UOffsetT) *PackageList {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &PackageList{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedPackageListBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *PackageList) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1820,11 +1979,19 @@ func GetRootAsPackage(buf []byte, offset flatbuffers.UOffsetT) *Package {
 	return x
 }
 
+func FinishPackageBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsPackage(buf []byte, offset flatbuffers.UOffsetT) *Package {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Package{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedPackageBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Package) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -1907,11 +2074,19 @@ func GetRootAsFile(buf []byte, offset flatbuffers.UOffsetT) *File {
 	return x
 }
 
+func FinishFileBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsFile(buf []byte, offset flatbuffers.UOffsetT) *File {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &File{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedFileBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *File) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2025,11 +2200,19 @@ func GetRootAsPackageClause(buf []byte, offset flatbuffers.UOffsetT) *PackageCla
 	return x
 }
 
+func FinishPackageClauseBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsPackageClause(buf []byte, offset flatbuffers.UOffsetT) *PackageClause {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &PackageClause{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedPackageClauseBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *PackageClause) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2091,11 +2274,19 @@ func GetRootAsImportDeclaration(buf []byte, offset flatbuffers.UOffsetT) *Import
 	return x
 }
 
+func FinishImportDeclarationBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsImportDeclaration(buf []byte, offset flatbuffers.UOffsetT) *ImportDeclaration {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &ImportDeclaration{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedImportDeclarationBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *ImportDeclaration) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2173,11 +2364,19 @@ func GetRootAsSourceLocation(buf []byte, offset flatbuffers.UOffsetT) *SourceLoc
 	return x
 }
 
+func FinishSourceLocationBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsSourceLocation(buf []byte, offset flatbuffers.UOffsetT) *SourceLocation {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &SourceLocation{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedSourceLocationBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *SourceLocation) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2295,11 +2494,19 @@ func GetRootAsWrappedStatement(buf []byte, offset flatbuffers.UOffsetT) *Wrapped
 	return x
 }
 
+func FinishWrappedStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsWrappedStatement(buf []byte, offset flatbuffers.UOffsetT) *WrappedStatement {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &WrappedStatement{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedWrappedStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *WrappedStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2356,11 +2563,19 @@ func GetRootAsOptionStatement(buf []byte, offset flatbuffers.UOffsetT) *OptionSt
 	return x
 }
 
+func FinishOptionStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsOptionStatement(buf []byte, offset flatbuffers.UOffsetT) *OptionStatement {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &OptionStatement{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedOptionStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *OptionStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2433,11 +2648,19 @@ func GetRootAsBuiltinStatement(buf []byte, offset flatbuffers.UOffsetT) *Builtin
 	return x
 }
 
+func FinishBuiltinStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsBuiltinStatement(buf []byte, offset flatbuffers.UOffsetT) *BuiltinStatement {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &BuiltinStatement{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedBuiltinStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *BuiltinStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2499,11 +2722,19 @@ func GetRootAsTestStatement(buf []byte, offset flatbuffers.UOffsetT) *TestStatem
 	return x
 }
 
+func FinishTestStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsTestStatement(buf []byte, offset flatbuffers.UOffsetT) *TestStatement {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &TestStatement{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedTestStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *TestStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2565,11 +2796,19 @@ func GetRootAsExpressionStatement(buf []byte, offset flatbuffers.UOffsetT) *Expr
 	return x
 }
 
+func FinishExpressionStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsExpressionStatement(buf []byte, offset flatbuffers.UOffsetT) *ExpressionStatement {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &ExpressionStatement{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedExpressionStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *ExpressionStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2642,11 +2881,19 @@ func GetRootAsReturnStatement(buf []byte, offset flatbuffers.UOffsetT) *ReturnSt
 	return x
 }
 
+func FinishReturnStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsReturnStatement(buf []byte, offset flatbuffers.UOffsetT) *ReturnStatement {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &ReturnStatement{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedReturnStatementBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *ReturnStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2719,11 +2966,19 @@ func GetRootAsNativeVariableAssignment(buf []byte, offset flatbuffers.UOffsetT) 
 	return x
 }
 
+func FinishNativeVariableAssignmentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsNativeVariableAssignment(buf []byte, offset flatbuffers.UOffsetT) *NativeVariableAssignment {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &NativeVariableAssignment{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedNativeVariableAssignmentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *NativeVariableAssignment) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2828,11 +3083,19 @@ func GetRootAsMemberAssignment(buf []byte, offset flatbuffers.UOffsetT) *MemberA
 	return x
 }
 
+func FinishMemberAssignmentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsMemberAssignment(buf []byte, offset flatbuffers.UOffsetT) *MemberAssignment {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &MemberAssignment{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedMemberAssignmentBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *MemberAssignment) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2921,11 +3184,19 @@ func GetRootAsWrappedExpression(buf []byte, offset flatbuffers.UOffsetT) *Wrappe
 	return x
 }
 
+func FinishWrappedExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsWrappedExpression(buf []byte, offset flatbuffers.UOffsetT) *WrappedExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &WrappedExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedWrappedExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *WrappedExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -2982,11 +3253,19 @@ func GetRootAsStringExpression(buf []byte, offset flatbuffers.UOffsetT) *StringE
 	return x
 }
 
+func FinishStringExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsStringExpression(buf []byte, offset flatbuffers.UOffsetT) *StringExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &StringExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedStringExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *StringExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -3058,11 +3337,19 @@ func GetRootAsStringExpressionPart(buf []byte, offset flatbuffers.UOffsetT) *Str
 	return x
 }
 
+func FinishStringExpressionPartBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsStringExpressionPart(buf []byte, offset flatbuffers.UOffsetT) *StringExpressionPart {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &StringExpressionPart{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedStringExpressionPartBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *StringExpressionPart) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -3146,11 +3433,19 @@ func GetRootAsArrayExpression(buf []byte, offset flatbuffers.UOffsetT) *ArrayExp
 	return x
 }
 
+func FinishArrayExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsArrayExpression(buf []byte, offset flatbuffers.UOffsetT) *ArrayExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &ArrayExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedArrayExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *ArrayExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -3249,11 +3544,19 @@ func GetRootAsDictExpression(buf []byte, offset flatbuffers.UOffsetT) *DictExpre
 	return x
 }
 
+func FinishDictExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsDictExpression(buf []byte, offset flatbuffers.UOffsetT) *DictExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &DictExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedDictExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *DictExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -3352,11 +3655,19 @@ func GetRootAsDictItem(buf []byte, offset flatbuffers.UOffsetT) *DictItem {
 	return x
 }
 
+func FinishDictItemBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsDictItem(buf []byte, offset flatbuffers.UOffsetT) *DictItem {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &DictItem{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedDictItemBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *DictItem) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -3440,11 +3751,19 @@ func GetRootAsFunctionExpression(buf []byte, offset flatbuffers.UOffsetT) *Funct
 	return x
 }
 
+func FinishFunctionExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsFunctionExpression(buf []byte, offset flatbuffers.UOffsetT) *FunctionExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &FunctionExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedFunctionExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *FunctionExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -3575,11 +3894,19 @@ func GetRootAsFunctionParameter(buf []byte, offset flatbuffers.UOffsetT) *Functi
 	return x
 }
 
+func FinishFunctionParameterBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsFunctionParameter(buf []byte, offset flatbuffers.UOffsetT) *FunctionParameter {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &FunctionParameter{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedFunctionParameterBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *FunctionParameter) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -3683,11 +4010,19 @@ func GetRootAsBlock(buf []byte, offset flatbuffers.UOffsetT) *Block {
 	return x
 }
 
+func FinishBlockBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsBlock(buf []byte, offset flatbuffers.UOffsetT) *Block {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Block{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedBlockBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Block) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -3759,11 +4094,19 @@ func GetRootAsBinaryExpression(buf []byte, offset flatbuffers.UOffsetT) *BinaryE
 	return x
 }
 
+func FinishBinaryExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsBinaryExpression(buf []byte, offset flatbuffers.UOffsetT) *BinaryExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &BinaryExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedBinaryExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *BinaryExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -3905,11 +4248,19 @@ func GetRootAsCallExpression(buf []byte, offset flatbuffers.UOffsetT) *CallExpre
 	return x
 }
 
+func FinishCallExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsCallExpression(buf []byte, offset flatbuffers.UOffsetT) *CallExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &CallExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedCallExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *CallExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -4062,11 +4413,19 @@ func GetRootAsConditionalExpression(buf []byte, offset flatbuffers.UOffsetT) *Co
 	return x
 }
 
+func FinishConditionalExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsConditionalExpression(buf []byte, offset flatbuffers.UOffsetT) *ConditionalExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &ConditionalExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedConditionalExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *ConditionalExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -4193,11 +4552,19 @@ func GetRootAsLogicalExpression(buf []byte, offset flatbuffers.UOffsetT) *Logica
 	return x
 }
 
+func FinishLogicalExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsLogicalExpression(buf []byte, offset flatbuffers.UOffsetT) *LogicalExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &LogicalExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedLogicalExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *LogicalExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -4339,11 +4706,19 @@ func GetRootAsMemberExpression(buf []byte, offset flatbuffers.UOffsetT) *MemberE
 	return x
 }
 
+func FinishMemberExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsMemberExpression(buf []byte, offset flatbuffers.UOffsetT) *MemberExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &MemberExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedMemberExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *MemberExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -4454,11 +4829,19 @@ func GetRootAsIndexExpression(buf []byte, offset flatbuffers.UOffsetT) *IndexExp
 	return x
 }
 
+func FinishIndexExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsIndexExpression(buf []byte, offset flatbuffers.UOffsetT) *IndexExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &IndexExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedIndexExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *IndexExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -4585,11 +4968,19 @@ func GetRootAsObjectExpression(buf []byte, offset flatbuffers.UOffsetT) *ObjectE
 	return x
 }
 
+func FinishObjectExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsObjectExpression(buf []byte, offset flatbuffers.UOffsetT) *ObjectExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &ObjectExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedObjectExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *ObjectExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -4704,11 +5095,19 @@ func GetRootAsUnaryExpression(buf []byte, offset flatbuffers.UOffsetT) *UnaryExp
 	return x
 }
 
+func FinishUnaryExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsUnaryExpression(buf []byte, offset flatbuffers.UOffsetT) *UnaryExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &UnaryExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedUnaryExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *UnaryExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -4823,11 +5222,19 @@ func GetRootAsProperty(buf []byte, offset flatbuffers.UOffsetT) *Property {
 	return x
 }
 
+func FinishPropertyBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsProperty(buf []byte, offset flatbuffers.UOffsetT) *Property {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Property{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedPropertyBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Property) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -4916,11 +5323,19 @@ func GetRootAsIdentifierExpression(buf []byte, offset flatbuffers.UOffsetT) *Ide
 	return x
 }
 
+func FinishIdentifierExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsIdentifierExpression(buf []byte, offset flatbuffers.UOffsetT) *IdentifierExpression {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &IdentifierExpression{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedIdentifierExpressionBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *IdentifierExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5004,11 +5419,19 @@ func GetRootAsIdentifier(buf []byte, offset flatbuffers.UOffsetT) *Identifier {
 	return x
 }
 
+func FinishIdentifierBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsIdentifier(buf []byte, offset flatbuffers.UOffsetT) *Identifier {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Identifier{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedIdentifierBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Identifier) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5065,11 +5488,19 @@ func GetRootAsBooleanLiteral(buf []byte, offset flatbuffers.UOffsetT) *BooleanLi
 	return x
 }
 
+func FinishBooleanLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsBooleanLiteral(buf []byte, offset flatbuffers.UOffsetT) *BooleanLiteral {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &BooleanLiteral{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedBooleanLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *BooleanLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5130,11 +5561,19 @@ func GetRootAsDateTimeLiteral(buf []byte, offset flatbuffers.UOffsetT) *DateTime
 	return x
 }
 
+func FinishDateTimeLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsDateTimeLiteral(buf []byte, offset flatbuffers.UOffsetT) *DateTimeLiteral {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &DateTimeLiteral{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedDateTimeLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *DateTimeLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5196,11 +5635,19 @@ func GetRootAsTime(buf []byte, offset flatbuffers.UOffsetT) *Time {
 	return x
 }
 
+func FinishTimeBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsTime(buf []byte, offset flatbuffers.UOffsetT) *Time {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Time{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedTimeBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Time) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5275,11 +5722,19 @@ func GetRootAsDuration(buf []byte, offset flatbuffers.UOffsetT) *Duration {
 	return x
 }
 
+func FinishDurationBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsDuration(buf []byte, offset flatbuffers.UOffsetT) *Duration {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Duration{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedDurationBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Duration) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5354,11 +5809,19 @@ func GetRootAsDurationLiteral(buf []byte, offset flatbuffers.UOffsetT) *Duration
 	return x
 }
 
+func FinishDurationLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsDurationLiteral(buf []byte, offset flatbuffers.UOffsetT) *DurationLiteral {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &DurationLiteral{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedDurationLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *DurationLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5430,11 +5893,19 @@ func GetRootAsIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *IntegerLi
 	return x
 }
 
+func FinishIntegerLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *IntegerLiteral {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &IntegerLiteral{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedIntegerLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *IntegerLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5495,11 +5966,19 @@ func GetRootAsFloatLiteral(buf []byte, offset flatbuffers.UOffsetT) *FloatLitera
 	return x
 }
 
+func FinishFloatLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsFloatLiteral(buf []byte, offset flatbuffers.UOffsetT) *FloatLiteral {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &FloatLiteral{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedFloatLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *FloatLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5560,11 +6039,19 @@ func GetRootAsRegexpLiteral(buf []byte, offset flatbuffers.UOffsetT) *RegexpLite
 	return x
 }
 
+func FinishRegexpLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsRegexpLiteral(buf []byte, offset flatbuffers.UOffsetT) *RegexpLiteral {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &RegexpLiteral{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedRegexpLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *RegexpLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5621,11 +6108,19 @@ func GetRootAsStringLiteral(buf []byte, offset flatbuffers.UOffsetT) *StringLite
 	return x
 }
 
+func FinishStringLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsStringLiteral(buf []byte, offset flatbuffers.UOffsetT) *StringLiteral {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &StringLiteral{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedStringLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *StringLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5682,11 +6177,19 @@ func GetRootAsUnsignedIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *U
 	return x
 }
 
+func FinishUnsignedIntegerLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsUnsignedIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *UnsignedIntegerLiteral {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &UnsignedIntegerLiteral{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedUnsignedIntegerLiteralBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *UnsignedIntegerLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
@@ -5747,11 +6250,19 @@ func GetRootAsModule(buf []byte, offset flatbuffers.UOffsetT) *Module {
 	return x
 }
 
+func FinishModuleBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsModule(buf []byte, offset flatbuffers.UOffsetT) *Module {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Module{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedModuleBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Module) Init(buf []byte, i flatbuffers.UOffsetT) {
