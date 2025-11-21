@@ -2,6 +2,7 @@
 
 #![allow(clippy::undocumented_unsafe_blocks)]
 
+#![cfg_attr(feature = "strict", allow(unknown_lints, mismatched_lifetime_syntaxes))]
 #[allow(clippy::all, missing_docs, non_upper_case_globals)]
 pub mod semantic_generated;
 #[allow(missing_docs)]
