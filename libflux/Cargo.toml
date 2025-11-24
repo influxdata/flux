@@ -1,5 +1,6 @@
 [workspace]
 members = ["flux-core", "flux"]
+resolver = "2"
 
 # https://rustwasm.github.io/docs/book/reference/code-size.html#optimizing-builds-for-code-size
 [profile.release]

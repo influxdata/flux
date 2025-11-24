@@ -2,14 +2,13 @@
 
 //! This module provides the public facing API for Flux's Go runtime, including formatting,
 //! parsing, and standard library analysis.
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use anyhow::anyhow;
 use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use fluxcore::semantic::import::Packages;
 use fluxcore::semantic::{Analyzer, AnalyzerConfig, PackageExports};
-use once_cell::sync::Lazy;
 use thiserror::Error;
 
 pub use fluxcore::{ast, formatter, semantic, *};
@@ -53,7 +52,7 @@ pub fn prelude() -> Option<PackageExports> {
         .into()
 }
 
-static PRELUDE: Lazy<Option<Arc<PackageExports>>> = Lazy::new(|| prelude().map(Arc::new));
+static PRELUDE: LazyLock<Option<Arc<PackageExports>>> = LazyLock::new(|| prelude().map(Arc::new));
 
 /// Imports is a map of import path to types of packages.
 pub fn imports() -> Option<Packages> {
@@ -65,7 +64,7 @@ pub fn imports() -> Option<Packages> {
         .into()
 }
 
-static IMPORTS: Lazy<Option<Packages>> = Lazy::new(imports);
+static IMPORTS: LazyLock<Option<Packages>> = LazyLock::new(imports);
 
 /// Creates a new analyzer that can semantically analyze Flux source code.
 ///
