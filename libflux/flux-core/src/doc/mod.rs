@@ -12,7 +12,7 @@ use std::{
 
 use anyhow::{bail, Result};
 use derive_more::Display;
-use pulldown_cmark::{Event, HeadingLevel, OffsetIter, Parser as MarkdownParser, Tag};
+use pulldown_cmark::{Event, HeadingLevel, OffsetIter, Parser as MarkdownParser, Tag, TagEnd};
 use regex::Regex;
 
 use crate::{
@@ -771,7 +771,7 @@ const METADATA_HEADING: &str = "Metadata";
 // Parser produces a series of tokens from documentation comments.
 struct Parser<'a> {
     content: &'a str,
-    iter: Peekable<OffsetIter<'a, 'a>>,
+    iter: Peekable<OffsetIter<'a>>,
     tokens: Vec<Token<'a>>,
 }
 
@@ -835,7 +835,7 @@ impl<'a> Parser<'a> {
         // We have a paragraph so gather all events until the end of the paragraph.
         loop {
             match self.iter.next() {
-                Some((Event::End(Tag::Paragraph), r)) => {
+                Some((Event::End(TagEnd::Paragraph), r)) => {
                     range.end = r.end;
                     self.tokens.push(Token::Headline(self.slice(range)));
                     return self.parse_description();
@@ -860,7 +860,13 @@ impl<'a> Parser<'a> {
         // Peek and consume items until we see a delimiter heading
         loop {
             match self.iter.next() {
-                Some((Event::Start(Tag::Heading(HeadingLevel::H2, _, _)), r)) => {
+                Some((
+                    Event::Start(Tag::Heading {
+                        level: HeadingLevel::H2,
+                        ..
+                    }),
+                    r,
+                )) => {
                     if let Some((Event::Text(t), _)) = self.iter.peek() {
                         // The description ends at the start of this heading
                         range.end = r.start;
@@ -895,7 +901,13 @@ impl<'a> Parser<'a> {
 
     fn parse_any_heading_or_description(&mut self) -> Result<()> {
         match self.iter.peek() {
-            Some((Event::Start(Tag::Heading(HeadingLevel::H2, _, _)), _)) => {
+            Some((
+                Event::Start(Tag::Heading {
+                    level: HeadingLevel::H2,
+                    ..
+                }),
+                _,
+            )) => {
                 self.iter.next();
                 self.parse_any_heading_text()
             }
@@ -933,7 +945,7 @@ impl<'a> Parser<'a> {
         }
         if self
             .iter
-            .next_if(|e| matches!(e, (Event::End(Tag::Heading(HeadingLevel::H2, _, _)), _)))
+            .next_if(|e| matches!(e, (Event::End(TagEnd::Heading(HeadingLevel::H2)), _)))
             .is_none()
         {
             bail!("missing end of heading")
@@ -958,7 +970,7 @@ impl<'a> Parser<'a> {
                 self.tokens.push(Token::Parameter);
                 self.parse_parameter_headline()
             }
-            Some((Event::End(Tag::List(_)), _)) => {
+            Some((Event::End(TagEnd::List(_)), _)) => {
                 // We reached the end of the parameters list
                 // Start lexing the next section.
                 self.parse_any_heading_or_description()
@@ -980,7 +992,7 @@ impl<'a> Parser<'a> {
                 // We do not have an explicit paragraph so assume the entire item is the headline.
                 loop {
                     match self.iter.next() {
-                        Some((Event::End(Tag::Item), end)) => {
+                        Some((Event::End(TagEnd::Item), end)) => {
                             self.tokens.push(Token::ParamHeadline(self.slice(Range {
                                 start: start.start,
                                 end: end.end,
@@ -1002,7 +1014,7 @@ impl<'a> Parser<'a> {
         // We have a paragraph so gather all events until the end of the paragraph.
         loop {
             match self.iter.next() {
-                Some((Event::End(Tag::Paragraph), r)) => {
+                Some((Event::End(TagEnd::Paragraph), r)) => {
                     range.end = r.end;
                     self.tokens.push(Token::ParamHeadline(self.slice(range)));
                     return self.parse_parameter_description();
@@ -1030,10 +1042,10 @@ impl<'a> Parser<'a> {
                 Some((Event::Start(Tag::List(_)), _)) => {
                     depth += 1;
                 }
-                Some((Event::End(Tag::List(_)), _)) => {
+                Some((Event::End(TagEnd::List(_)), _)) => {
                     depth -= 1;
                 }
-                Some((Event::End(Tag::Item), r)) => {
+                Some((Event::End(TagEnd::Item), r)) => {
                     if depth == 0 {
                         range.end = r.end;
                         if range != r {
@@ -1062,7 +1074,7 @@ impl<'a> Parser<'a> {
         }
         if self
             .iter
-            .next_if(|e| matches!(e, (Event::End(Tag::Heading(HeadingLevel::H2, _, _)), _)))
+            .next_if(|e| matches!(e, (Event::End(TagEnd::Heading(HeadingLevel::H2)), _)))
             .is_none()
         {
             bail!("missing end of heading")
@@ -1072,14 +1084,20 @@ impl<'a> Parser<'a> {
         let mut count = 0;
         loop {
             match self.iter.next() {
-                Some((Event::Start(Tag::Heading(HeadingLevel::H2, _, _)), r)) => {
+                Some((
+                    Event::Start(Tag::Heading {
+                        level: HeadingLevel::H2,
+                        ..
+                    }),
+                    r,
+                )) => {
                     // Heading 2 means we are done with examples
                     // We found the begining of a new section, emit the content token.
                     range.end = r.start;
                     self.tokens.push(Token::ExampleContent(self.slice(range)));
                     return self.parse_any_heading_text();
                 }
-                Some((Event::End(Tag::Heading(HeadingLevel::H3, _, _)), r)) => {
+                Some((Event::End(TagEnd::Heading(HeadingLevel::H3)), r)) => {
                     range.end = r.start;
                     if count > 0 {
                         // We found another example emit the content token
@@ -1112,7 +1130,7 @@ impl<'a> Parser<'a> {
         }
         if self
             .iter
-            .next_if(|e| matches!(e, (Event::End(Tag::Heading(HeadingLevel::H2, _, _)), _)))
+            .next_if(|e| matches!(e, (Event::End(TagEnd::Heading(HeadingLevel::H2)), _)))
             .is_none()
         {
             bail!("missing end of heading")
@@ -1121,7 +1139,13 @@ impl<'a> Parser<'a> {
         let mut range: Range<usize> = Range::default();
         loop {
             match self.iter.next() {
-                Some((Event::Start(Tag::Heading(HeadingLevel::H2, _, _)), r)) => {
+                Some((
+                    Event::Start(Tag::Heading {
+                        level: HeadingLevel::H2,
+                        ..
+                    }),
+                    r,
+                )) => {
                     // Heading 2 means we are done with metadata
                     // We found the begining of a new section, emit the line token.
                     range.end = r.start;
