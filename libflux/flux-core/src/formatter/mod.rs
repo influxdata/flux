@@ -1948,7 +1948,7 @@ struct Operator<'a> {
     is_logical: bool,
 }
 
-impl<'a> Operator<'a> {
+impl Operator<'_> {
     fn new(op: &ast::Operator) -> Operator<'_> {
         Operator {
             op: Some(op),

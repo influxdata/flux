@@ -4,7 +4,7 @@
 # and verification, we can list the rust container as a prior build stage, and
 # then pull in the artifacts we need. There is an added benefit that tagged versions
 # also include minor releases, so 1.2 includes 1.2.1 and so on, for bugfix releases.
-FROM rust:1.85 AS rustbuild
+FROM rust:1.91 AS rustbuild
 
 FROM golang:1.24 AS pkgconfig
 COPY go.mod go.sum /go/src/github.com/influxdata/flux/

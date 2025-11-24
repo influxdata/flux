@@ -290,7 +290,7 @@ struct CLIExecutor<'a> {
     path: &'a Path,
 }
 
-impl<'a> example::Executor for CLIExecutor<'a> {
+impl example::Executor for CLIExecutor<'_> {
     fn execute(&self, code: &str) -> Result<String> {
         let tmpfile = tempfile::NamedTempFile::new()?;
         write!(tmpfile.reopen()?, "{}", code)?;

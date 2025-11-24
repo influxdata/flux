@@ -538,7 +538,7 @@ where
     pub state: &'s mut S,
 }
 
-impl<'s, I, F, G, U, S> Iterator for MergeIter<'s, I, F, G, U, S>
+impl<I, F, G, U, S> Iterator for MergeIter<'_, I, F, G, U, S>
 where
     S: ?Sized,
     I: Iterator,

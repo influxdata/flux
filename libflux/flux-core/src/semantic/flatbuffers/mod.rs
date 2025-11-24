@@ -68,7 +68,7 @@ fn serialize<'a>(
     v.offset()
 }
 
-impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
+impl semantic::walk::Visitor<'_> for SerializingVisitor<'_, '_> {
     fn visit(&mut self, _node: walk::Node<'_>) -> bool {
         if self.err.is_some() {
             return false;
@@ -913,7 +913,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
     }
 }
 
-impl<'a, 'b> SerializingVisitor<'a, 'b> {
+impl<'a> SerializingVisitor<'a, '_> {
     // Return the offset for the package, checking for any error that may have occurred during
     // serialization.
     fn offset(self) -> Result<flatbuffers::WIPOffset<fbsemantic::Package<'a>>> {

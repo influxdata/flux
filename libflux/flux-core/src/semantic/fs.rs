@@ -25,7 +25,7 @@ impl<'a> StdFS<'a> {
         StdFS { root }
     }
 }
-impl<'a> FileSystem for StdFS<'a> {
+impl FileSystem for StdFS<'_> {
     type File = fs::File;
     fn open(&mut self, path: &str) -> io::Result<Self::File> {
         let mut fpath = self.root.join(path);
