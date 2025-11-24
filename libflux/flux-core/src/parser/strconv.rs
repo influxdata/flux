@@ -144,7 +144,7 @@ pub fn parse_time(lit: &str) -> Result<DateTime<FixedOffset>, String> {
                 let time = NaiveTime::from_hms_opt(0, 0, 0).unwrap();
                 // Naive date time, with no time zone information
                 let datetime = date.and_time(time);
-                Ok(DateTime::from_utc(datetime, offset))
+                Ok(DateTime::from_naive_utc_and_offset(datetime, offset))
             }
             Err(e) => Err(e),
         }

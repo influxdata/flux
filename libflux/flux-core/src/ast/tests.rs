@@ -1955,9 +1955,6 @@ fn test_json_duration_literal() {
     want: `{"type":"DateTimeLiteral","value":"2017-08-08T08:08:08.000000008Z"}`,
 },
 */
-// NOTE(affo): the output has changed to 2017-08-08T08:08:08.000000008+00:00.
-// There is no problem in doing that, because it is a RFC3339 compliant notation,
-// and it will be parsed by the Go backend.
 #[test]
 fn test_json_datetime_literal() {
     let utc_datetime = NaiveDate::from_ymd_opt(2017, 8, 8)
@@ -1973,7 +1970,7 @@ fn test_json_datetime_literal() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"DateTimeLiteral","value":"2017-08-08T08:08:08.000000008+00:00"}"#
+        r#"{"type":"DateTimeLiteral","value":"2017-08-08T08:08:08.000000008Z"}"#
     );
     let deserialized: Expression = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)

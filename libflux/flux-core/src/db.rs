@@ -401,9 +401,8 @@ fn package_exports_import(
     path: String,
 ) -> Result<Arc<PackageExports>, nodes::ErrorKind> {
     db.package_exports(path.clone())
-        .map(|exports| {
+        .inspect(|_| {
             db.clear_error(&path);
-            exports
         })
         .map_err(|err| {
             db.record_error(path.clone(), err.error);

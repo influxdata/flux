@@ -1,7 +1,7 @@
 [package]
 name = "flux-core"
 version = "0.155.0"
-rust-version = "1.80"
+rust-version = "1.82"
 authors = ["Flux Team <flux-developers@influxdata.com>"]
 edition = "2021"
 
@@ -55,7 +55,7 @@ env_logger = "0.9"
 flatbuffers = "25.9.23"
 fnv = "1.0.7"
 indexmap = "1"
-libflate = "1.2.0"
+libflate = "2.2"
 log = "0.4.16"
 lsp-types = { version = "0.97", optional = true }
 maplit = "1.0.2"
