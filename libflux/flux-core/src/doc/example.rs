@@ -462,7 +462,7 @@ mod tests {
         code: Expect,
         results: &'a str,
     }
-    impl<'a> Executor for MockExecutor<'a> {
+    impl Executor for MockExecutor<'_> {
         fn execute(&self, code: &str) -> Result<String> {
             self.code.assert_eq(code);
             Ok(self.results.to_string())

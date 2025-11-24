@@ -1205,7 +1205,7 @@ from_to_str! {
 
 struct OperatorVisitor;
 
-impl<'de> Visitor<'de> for OperatorVisitor {
+impl Visitor<'_> for OperatorVisitor {
     type Value = Operator;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -1292,7 +1292,7 @@ impl Serialize for LogicalOperator {
 
 struct LogicalOperatorVisitor;
 
-impl<'de> Visitor<'de> for LogicalOperatorVisitor {
+impl Visitor<'_> for LogicalOperatorVisitor {
     type Value = LogicalOperator;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -1577,7 +1577,7 @@ pub struct LabelLit {
 
 struct U64Visitor;
 
-impl<'de> Visitor<'de> for U64Visitor {
+impl Visitor<'_> for U64Visitor {
     type Value = u64;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -1605,7 +1605,7 @@ where
 
 struct I64Visitor;
 
-impl<'de> Visitor<'de> for I64Visitor {
+impl Visitor<'_> for I64Visitor {
     type Value = i64;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

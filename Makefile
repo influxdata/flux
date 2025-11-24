@@ -161,13 +161,13 @@ libflux-go: $(LIBFLUX_GENERATED_TARGETS)
 	$(GO_GENERATE) ./libflux/go/libflux
 
 libflux-wasm:
-	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
+	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev --locked
 
 clean-wasm:
 	rm -rf libflux/flux/pkg
 
 build-wasm:
-	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build -t nodejs --scope influxdata
+	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build -t nodejs --scope influxdata --locked
 
 publish-wasm: clean-wasm build-wasm
 	cd libflux/flux/pkg && npm publish --access public

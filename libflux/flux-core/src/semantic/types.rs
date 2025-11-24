@@ -475,8 +475,6 @@ where
     }
 }
 
-/// An ordered map of string identifiers to monotypes.
-
 /// Represents a Flux primitive primitive type such as int or string.
 #[derive(Debug, Display, Clone, Copy, Eq, PartialEq, Serialize)]
 #[allow(missing_docs)]
