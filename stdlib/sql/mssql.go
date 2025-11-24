@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
+	_ "github.com/microsoft/go-mssqldb"
 )
 
 // Microsoft SQL Server support.
@@ -201,7 +201,7 @@ type mssqlConfig struct {
 
 // Parses DSN connection string to a Config.
 // Unlike other drivers, go-mssqldb does not provide ParseDSN() or similar method.
-// Connection string options: https://github.com/denisenkom/go-mssqldb#connection-parameters-and-dsn
+// Connection string options: https://github.com/microsoft/go-mssqldb#connection-parameters-and-dsn
 func mssqlParseDSN(dsn string) (cfg *mssqlConfig, err error) {
 	cfg = &mssqlConfig{
 		Scheme: "sqlserver",
