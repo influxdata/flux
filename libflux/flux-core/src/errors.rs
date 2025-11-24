@@ -173,7 +173,7 @@ impl<T: fmt::Display + fmt::Debug + Any> StdError for Errors<T> {
 
 /// An error with an attached location
 #[derive(Debug, Display, Eq, PartialEq)]
-#[display(fmt = "error {}: {}", location, error)]
+#[display("error {}: {}", location, error)]
 pub struct Located<E> {
     /// The location where the error occured
     pub location: ast::SourceLocation,

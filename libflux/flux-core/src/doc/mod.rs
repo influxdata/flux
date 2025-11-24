@@ -26,7 +26,7 @@ use crate::{
 /// Diagnostic represents an issue with the documentation comments.
 /// Something about the formatting or content of the comments does not meet expectations.
 #[derive(Eq, PartialEq, Debug, Display)]
-#[display(fmt = "error {}: {}", loc, msg)]
+#[display("error {}: {}", loc, msg)]
 pub struct Diagnostic {
     msg: String,
     loc: ast::SourceLocation,

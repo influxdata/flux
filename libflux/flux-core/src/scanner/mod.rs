@@ -51,7 +51,7 @@ impl std::cmp::Eq for Position {}
 
 /// A token.
 #[derive(Debug, Display, Eq, PartialEq, Clone)]
-#[display(fmt = "{}", lit)]
+#[display("{}", lit)]
 pub struct Token {
     /// Type of token.
     pub tok: TokenType,

@@ -49,41 +49,41 @@ pub type Error = Located<ErrorKind>;
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[allow(missing_docs)]
 pub enum ErrorKind {
-    #[display(fmt = "{}", _0)]
+    #[display("{}", _0)]
     Inference(types::Error),
 
-    #[display(fmt = "undefined builtin identifier {}", _0)]
+    #[display("undefined builtin identifier {}", _0)]
     UndefinedBuiltin(String),
 
-    #[display(fmt = "undefined identifier {}", _0)]
+    #[display("undefined identifier {}", _0)]
     UndefinedIdentifier(String),
 
-    #[display(fmt = "invalid binary operator {}", _0)]
+    #[display("invalid binary operator {}", _0)]
     InvalidBinOp(ast::Operator),
 
-    #[display(fmt = "invalid unary operator {}", _0)]
+    #[display("invalid unary operator {}", _0)]
     InvalidUnaryOp(ast::Operator),
 
-    #[display(fmt = "invalid import path {}", _0)]
+    #[display("invalid import path {}", _0)]
     InvalidImportPath(String),
 
     #[display(
-        fmt = "package \"{}\" depends on itself: {}",
+        "package \"{}\" depends on itself: {}",
         package,
-        "display_cycle(package, cycle)"
+        display_cycle(package, cycle)
     )]
     ImportCycle { package: String, cycle: Vec<String> },
 
-    #[display(fmt = "return not valid in file block")]
+    #[display("return not valid in file block")]
     InvalidReturn,
 
-    #[display(fmt = "can't vectorize function: {}", _0)]
+    #[display("can't vectorize function: {}", _0)]
     UnableToVectorize(String),
 
-    #[display(fmt = "variable {} lacks the {} constraint", var, kind)]
+    #[display("variable {} lacks the {} constraint", var, kind)]
     MissingConstraint { var: BoundTvar, kind: Kind },
 
-    #[display(fmt = "{}. This is a bug in type inference", _0)]
+    #[display("{}. This is a bug in type inference", _0)]
     Bug(String),
 }
 

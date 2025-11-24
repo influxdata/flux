@@ -481,23 +481,23 @@ where
 #[derive(Debug, Display, Clone, Copy, Eq, PartialEq, Serialize)]
 #[allow(missing_docs)]
 pub enum BuiltinType {
-    #[display(fmt = "bool")]
+    #[display("bool")]
     Bool,
-    #[display(fmt = "int")]
+    #[display("int")]
     Int,
-    #[display(fmt = "uint")]
+    #[display("uint")]
     Uint,
-    #[display(fmt = "float")]
+    #[display("float")]
     Float,
-    #[display(fmt = "string")]
+    #[display("string")]
     String,
-    #[display(fmt = "duration")]
+    #[display("duration")]
     Duration,
-    #[display(fmt = "time")]
+    #[display("time")]
     Time,
-    #[display(fmt = "regexp")]
+    #[display("regexp")]
     Regexp,
-    #[display(fmt = "bytes")]
+    #[display("bytes")]
     Bytes,
 }
 
@@ -1242,7 +1242,7 @@ impl Dictionary {
 /// `Dynamic` values are not subject to static checks, relying instead on
 /// runtime validation to know whether or not a given operation can be performed.
 #[derive(Debug, Display, Clone, Eq, PartialEq, Serialize)]
-#[display(fmt = "dynamic")]
+#[display("dynamic")]
 pub struct Dynamic {}
 
 impl Substitutable for Dynamic {
