@@ -13,15 +13,15 @@ package libflux
 //
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "615ad808cdbde124c2ac29a82c61f90a6487ee05c697949c9ce7a822b7dfacf8",
+	"libflux/Cargo.lock":                                                                          "04184b5eaaf27711adbcef4023bf89183c6f5c249701bc10e94c6dea82230175",
 	"libflux/Cargo.toml":                                                                          "5fb7dd63ac209ddff2761e189adae7d86f1f3302b15a6a114508872dc92d7f5e",
-	"libflux/flux-core/Cargo.toml":                                                                "a929cf0cb865881994eb0a0968028648f1687b0788002fa29aa9d39f45554d56",
+	"libflux/flux-core/Cargo.toml":                                                                "5a805c20217dc48b8708146db41890f7d270556049b7f46f5f9cadec988b3308",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "4a6511e9ccc9718eada01b29544bd4d5c324ae87a85906c25ad7193a890f86fc",
 	"libflux/flux-core/src/ast/mod.rs":                                                            "c1bfadd0adbece203e9335c127835eac98d15f1fc4adc1b82f21969e9ef680bb",
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "901de48a1faf3ca09cad9e324200bc8ea593ce83a32551b2222f22fcd5c65416",
 	"libflux/flux-core/src/bin/README.md":                                                         "c1245a4938c923d065647b4dc4f7e19486e85c93d868ef2f7f47ddff62ec81df",
-	"libflux/flux-core/src/bin/analyze_query_log.rs":                                              "39e671b867268e1d8c244325205d7b2493aba337033f1112b1fb59555778fe9d",
-	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "58431044721fbc9783b6ab94d58c494eca5b84be906499eb1a4ab10e8e9958e7",
+	"libflux/flux-core/src/bin/analyze_query_log.rs":                                              "6e31760e481f2c751c9f52dd23bbb013671d2d7246944ab384aa328fdd80c3c4",
+	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "e060889a8dc683b73a7e33d9ef86b953a52f161ea4536036f0a485842fa433f2",
 	"libflux/flux-core/src/db.rs":                                                                 "8e60f802ce7ee0f60b615bf8ae9cf9d7844f4df5667cbdc43347ce0c7a085192",
 	"libflux/flux-core/src/doc/example.rs":                                                        "29008d7fbf26e612107827551d6fb41f725b5973fbd617e0f04b087eff596fd2",
 	"libflux/flux-core/src/doc/mod.rs":                                                            "529801eec40748e0fa510e1e5f181e3d858a37cc56e316190c46b89d789d1faf",
@@ -59,7 +59,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/walk/mod.rs":                                                  "027f6d345ab58846bef1a8db26983e74143e880d5e82a500fd12642470b9d86a",
 	"libflux/flux-core/src/semantic/walk/test_utils.rs":                                           "043d5137ed626f1990c89f639e867e5b33a906f13c427313b497062f98215846",
 	"libflux/flux-core/src/semantic/walk/walk_mut.rs":                                             "3e9b8db77f35cfdee5ef7e24c1bc08845484f3cb7ecd50a82163b6ad46899662",
-	"libflux/flux/Cargo.toml":                                                                     "43b61ab25199a25ddf7c68fcfd16171dee80a527412d6751ee11ea89933031b7",
+	"libflux/flux/Cargo.toml":                                                                     "12fae9b771751aff5f0b82b41a46047d3592a2df6c4d40b1cc9f99a8c9ab9088",
 	"libflux/flux/FLUXDOC.md":                                                                     "92e6dd8043bd87b4924e09aa28fb5346630aee1214de28ea2c8fc0687cad0785",
 	"libflux/flux/build.rs":                                                                       "31dcb1e825555e56b4d959244c4ea630b1d32ccddc1f8615620e0c23552d914f",
 	"libflux/flux/src/cffi.rs":                                                                    "573dd8ea708c3a41af03f8128c3e7ffa9e9a721eebb76f90a022165e50e0709e",
