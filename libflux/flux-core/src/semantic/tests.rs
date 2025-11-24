@@ -172,7 +172,7 @@ fn infer_types(
 ///
 /// # Example
 ///
-/// ```
+/// ```no_run
 /// #[test]
 /// fn instantiation() {
 ///    test_infer! {
@@ -187,7 +187,7 @@ fn infer_types(
 /// }
 /// ```
 ///
-/// ```
+/// ```no_run
 /// #[test]
 /// fn with_imports() {
 ///     test_infer! {
@@ -242,7 +242,7 @@ macro_rules! test_infer {
 ///
 /// # Example
 ///
-/// ```
+/// ```no_run
 /// #[test]
 /// fn undeclared_variable() {
 ///     test_infer_err! {
