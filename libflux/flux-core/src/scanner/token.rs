@@ -4,124 +4,124 @@ use derive_more::Display;
 #[allow(missing_docs)] // Not documenting token type variants.
 #[derive(Clone, Copy, Debug, Display, Hash, Eq, PartialEq)]
 pub enum TokenType {
-    #[display(fmt = "ILLEGAL")]
+    #[display("ILLEGAL")]
     Illegal,
-    #[display(fmt = "EOF")]
+    #[display("EOF")]
     Eof,
-    #[display(fmt = "COMMENT")]
+    #[display("COMMENT")]
     Comment,
 
     // Reserved keywords
-    #[display(fmt = "AND")]
+    #[display("AND")]
     And,
-    #[display(fmt = "OR")]
+    #[display("OR")]
     Or,
-    #[display(fmt = "NOT")]
+    #[display("NOT")]
     Not,
-    #[display(fmt = "IMPORT")]
+    #[display("IMPORT")]
     Import,
-    #[display(fmt = "PACKAGE")]
+    #[display("PACKAGE")]
     Package,
-    #[display(fmt = "RETURN")]
+    #[display("RETURN")]
     Return,
-    #[display(fmt = "OPTION")]
+    #[display("OPTION")]
     Option,
-    #[display(fmt = "BUILTIN")]
+    #[display("BUILTIN")]
     Builtin,
-    #[display(fmt = "TESTCASE")]
+    #[display("TESTCASE")]
     TestCase,
-    #[display(fmt = "IF")]
+    #[display("IF")]
     If,
-    #[display(fmt = "THEN")]
+    #[display("THEN")]
     Then,
-    #[display(fmt = "ELSE")]
+    #[display("ELSE")]
     Else,
 
     // Identifiers and literals
-    #[display(fmt = "IDENT")]
+    #[display("IDENT")]
     Ident,
-    #[display(fmt = "INT")]
+    #[display("INT")]
     Int,
-    #[display(fmt = "FLOAT")]
+    #[display("FLOAT")]
     Float,
-    #[display(fmt = "STRING")]
+    #[display("STRING")]
     String,
-    #[display(fmt = "REGEX")]
+    #[display("REGEX")]
     Regex,
-    #[display(fmt = "TIME")]
+    #[display("TIME")]
     Time,
-    #[display(fmt = "DURATION")]
+    #[display("DURATION")]
     Duration,
 
     // Operators
-    #[display(fmt = "ADD")]
+    #[display("ADD")]
     Add,
-    #[display(fmt = "SUB")]
+    #[display("SUB")]
     Sub,
-    #[display(fmt = "MUL")]
+    #[display("MUL")]
     Mul,
-    #[display(fmt = "DIV")]
+    #[display("DIV")]
     Div,
-    #[display(fmt = "MOD")]
+    #[display("MOD")]
     Mod,
-    #[display(fmt = "POW")]
+    #[display("POW")]
     Pow,
-    #[display(fmt = "EQ")]
+    #[display("EQ")]
     Eq,
-    #[display(fmt = "LT")]
+    #[display("LT")]
     Lt,
-    #[display(fmt = "GT")]
+    #[display("GT")]
     Gt,
-    #[display(fmt = "LTE")]
+    #[display("LTE")]
     Lte,
-    #[display(fmt = "GTE")]
+    #[display("GTE")]
     Gte,
-    #[display(fmt = "NEQ")]
+    #[display("NEQ")]
     Neq,
-    #[display(fmt = "REGEXEQ")]
+    #[display("REGEXEQ")]
     RegexEq,
-    #[display(fmt = "REGEXNEQ")]
+    #[display("REGEXNEQ")]
     RegexNeq,
-    #[display(fmt = "ASSIGN")]
+    #[display("ASSIGN")]
     Assign,
-    #[display(fmt = "ARROW")]
+    #[display("ARROW")]
     Arrow,
-    #[display(fmt = "LPAREN")]
+    #[display("LPAREN")]
     LParen,
-    #[display(fmt = "RPAREN")]
+    #[display("RPAREN")]
     RParen,
-    #[display(fmt = "LBRACK")]
+    #[display("LBRACK")]
     LBrack,
-    #[display(fmt = "RBRACK")]
+    #[display("RBRACK")]
     RBrack,
-    #[display(fmt = "LBRACE")]
+    #[display("LBRACE")]
     LBrace,
-    #[display(fmt = "RBRACE")]
+    #[display("RBRACE")]
     RBrace,
-    #[display(fmt = "COMMA")]
+    #[display("COMMA")]
     Comma,
-    #[display(fmt = "DOT")]
+    #[display("DOT")]
     Dot,
-    #[display(fmt = "COLON")]
+    #[display("COLON")]
     Colon,
-    #[display(fmt = "PIPE_FORWARD")]
+    #[display("PIPE_FORWARD")]
     PipeForward,
-    #[display(fmt = "PIPE_RECEIVE")]
+    #[display("PIPE_RECEIVE")]
     PipeReceive,
-    #[display(fmt = "EXISTS")]
+    #[display("EXISTS")]
     Exists,
 
     // String expression tokens
-    #[display(fmt = "QUOTE")]
+    #[display("QUOTE")]
     Quote,
-    #[display(fmt = "STRINGEXPR")]
+    #[display("STRINGEXPR")]
     StringExpr,
-    #[display(fmt = "TEXT")]
+    #[display("TEXT")]
     Text,
 
-    #[display(fmt = "QUESTION_MARK")]
+    #[display("QUESTION_MARK")]
     QuestionMark,
 
-    #[display(fmt = "ATTRIBUTE")]
+    #[display("ATTRIBUTE")]
     Attribute,
 }

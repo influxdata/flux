@@ -11,115 +11,115 @@ use crate::ast::*;
 #[derive(Debug, Display, Copy, Clone, derive_more::From)]
 #[allow(missing_docs)]
 pub enum Node<'a> {
-    #[display(fmt = "Package")]
+    #[display("Package")]
     Package(&'a Package),
-    #[display(fmt = "File")]
+    #[display("File")]
     File(&'a File),
-    #[display(fmt = "PackageClause")]
+    #[display("PackageClause")]
     PackageClause(&'a PackageClause),
-    #[display(fmt = "ImportDeclaration")]
+    #[display("ImportDeclaration")]
     ImportDeclaration(&'a ImportDeclaration),
 
     // Expressions
-    #[display(fmt = "Identifier")]
+    #[display("Identifier")]
     Identifier(&'a Identifier),
 
-    #[display(fmt = "ArrayExpr")]
+    #[display("ArrayExpr")]
     ArrayExpr(&'a ArrayExpr),
-    #[display(fmt = "DictExpr")]
+    #[display("DictExpr")]
     DictExpr(&'a DictExpr),
-    #[display(fmt = "FunctionExpr")]
+    #[display("FunctionExpr")]
     FunctionExpr(&'a FunctionExpr),
-    #[display(fmt = "LogicalExpr")]
+    #[display("LogicalExpr")]
     LogicalExpr(&'a LogicalExpr),
-    #[display(fmt = "ObjectExpr")]
+    #[display("ObjectExpr")]
     ObjectExpr(&'a ObjectExpr),
-    #[display(fmt = "MemberExpr")]
+    #[display("MemberExpr")]
     MemberExpr(&'a MemberExpr),
-    #[display(fmt = "IndexExpr")]
+    #[display("IndexExpr")]
     IndexExpr(&'a IndexExpr),
-    #[display(fmt = "BinaryExpr")]
+    #[display("BinaryExpr")]
     BinaryExpr(&'a BinaryExpr),
-    #[display(fmt = "UnaryExpr")]
+    #[display("UnaryExpr")]
     UnaryExpr(&'a UnaryExpr),
-    #[display(fmt = "PipeExpr")]
+    #[display("PipeExpr")]
     PipeExpr(&'a PipeExpr),
-    #[display(fmt = "CallExpr")]
+    #[display("CallExpr")]
     CallExpr(&'a CallExpr),
-    #[display(fmt = "ConditionalExpr")]
+    #[display("ConditionalExpr")]
     ConditionalExpr(&'a ConditionalExpr),
-    #[display(fmt = "StringExpr")]
+    #[display("StringExpr")]
     StringExpr(&'a StringExpr),
-    #[display(fmt = "ParenExpr")]
+    #[display("ParenExpr")]
     ParenExpr(&'a ParenExpr),
 
-    #[display(fmt = "IntegerLit")]
+    #[display("IntegerLit")]
     IntegerLit(&'a IntegerLit),
-    #[display(fmt = "FloatLit")]
+    #[display("FloatLit")]
     FloatLit(&'a FloatLit),
-    #[display(fmt = "StringLit")]
+    #[display("StringLit")]
     StringLit(&'a StringLit),
-    #[display(fmt = "DurationLit")]
+    #[display("DurationLit")]
     DurationLit(&'a DurationLit),
-    #[display(fmt = "UintLit")]
+    #[display("UintLit")]
     UintLit(&'a UintLit),
-    #[display(fmt = "BooleanLit")]
+    #[display("BooleanLit")]
     BooleanLit(&'a BooleanLit),
-    #[display(fmt = "DateTimeLit")]
+    #[display("DateTimeLit")]
     DateTimeLit(&'a DateTimeLit),
-    #[display(fmt = "RegexpLit")]
+    #[display("RegexpLit")]
     RegexpLit(&'a RegexpLit),
-    #[display(fmt = "PipeLit")]
+    #[display("PipeLit")]
     PipeLit(&'a PipeLit),
-    #[display(fmt = "LabelLit")]
+    #[display("LabelLit")]
     LabelLit(&'a LabelLit),
 
-    #[display(fmt = "BadExpr")]
+    #[display("BadExpr")]
     BadExpr(&'a BadExpr),
 
     // Statements
-    #[display(fmt = "ExprStmt")]
+    #[display("ExprStmt")]
     ExprStmt(&'a ExprStmt),
-    #[display(fmt = "OptionStmt")]
+    #[display("OptionStmt")]
     OptionStmt(&'a OptionStmt),
-    #[display(fmt = "ReturnStmt")]
+    #[display("ReturnStmt")]
     ReturnStmt(&'a ReturnStmt),
-    #[display(fmt = "BadStmt")]
+    #[display("BadStmt")]
     BadStmt(&'a BadStmt),
-    #[display(fmt = "TestCaseStmt")]
+    #[display("TestCaseStmt")]
     TestCaseStmt(&'a TestCaseStmt),
-    #[display(fmt = "BuiltinStmt")]
+    #[display("BuiltinStmt")]
     BuiltinStmt(&'a BuiltinStmt),
 
     // FunctionBlock
-    #[display(fmt = "Block")]
+    #[display("Block")]
     Block(&'a Block),
 
     // Property
-    #[display(fmt = "Property")]
+    #[display("Property")]
     Property(&'a Property),
 
     // StringExprPart
-    #[display(fmt = "TextPart")]
+    #[display("TextPart")]
     TextPart(&'a TextPart),
-    #[display(fmt = "InterpolatedPart")]
+    #[display("InterpolatedPart")]
     InterpolatedPart(&'a InterpolatedPart),
 
     // Assignment
-    #[display(fmt = "VariableAssgn")]
+    #[display("VariableAssgn")]
     VariableAssgn(&'a VariableAssgn),
-    #[display(fmt = "MemberAssgn")]
+    #[display("MemberAssgn")]
     MemberAssgn(&'a MemberAssgn),
 
-    #[display(fmt = "TypeExpression")]
+    #[display("TypeExpression")]
     TypeExpression(&'a TypeExpression),
-    #[display(fmt = "MonoType")]
+    #[display("MonoType")]
     MonoType(&'a MonoType),
-    #[display(fmt = "PropertyType")]
+    #[display("PropertyType")]
     PropertyType(&'a PropertyType),
-    #[display(fmt = "ParameterType")]
+    #[display("ParameterType")]
     ParameterType(&'a ParameterType),
-    #[display(fmt = "TypeConstraint")]
+    #[display("TypeConstraint")]
     TypeConstraint(&'a TypeConstraint),
 }
 

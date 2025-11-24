@@ -102,7 +102,7 @@ impl From<Constraint> for Constraints {
 
 #[cfg_attr(feature = "strict", allow(dead_code, missing_docs))]
 #[derive(Debug, Display, Eq, PartialEq)]
-#[display(fmt = "type error {}: {}", loc, err)]
+#[display("type error {}: {}", loc, err)]
 pub struct Error {
     pub loc: SourceLocation,
     pub err: types::Error,

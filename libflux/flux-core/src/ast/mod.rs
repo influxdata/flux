@@ -396,7 +396,7 @@ impl PropertyKey {
 //  FunctionBodyExpression         = Block | Expression .
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-#[allow(missing_docs)]
+#[allow(missing_docs, clippy::large_enum_variant)]
 pub enum FunctionBody {
     Block(Block),
     Expr(Expression),
@@ -1705,4 +1705,5 @@ where
 // The tests code exports a few helpers for writing AST related tests.
 // We make it public so other tests can consume those helpers.
 #[cfg(test)]
+/// Test helpers and utilities for AST
 pub mod tests;

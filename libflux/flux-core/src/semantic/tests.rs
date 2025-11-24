@@ -25,7 +25,7 @@
 use std::sync::Arc;
 
 use colored::*;
-use derive_more::Display;
+
 use expect_test::expect;
 
 use crate::{
@@ -70,24 +70,34 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeHashMap<S
         .collect()
 }
 
-#[derive(Debug, Display, PartialEq)]
+#[derive(Debug, PartialEq)]
 enum Error {
-    #[display(fmt = "{}", _0)]
     Semantic(semantic::FileErrors),
-    #[display(
-        fmt = "\n\n{}\n\n{}\n{}\n{}\n{}\n",
-        r#""unexpected types:".red().bold()"#,
-        r#""want:".green().bold()"#,
-        r#"want.iter().fold(String::new(), |acc, (name, poly)| acc
-            + &format!("\t{}: {}\n", name, poly))"#,
-        r#""got:".red().bold()"#,
-        r#"got.iter().fold(String::new(), |acc, (name, poly)| acc
-                    + &format!("\t{}: {}\n", name, poly))"#
-    )]
     TypeMismatch {
         want: SemanticMap<String, PolyType>,
         got: SemanticMap<String, PolyType>,
     },
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Semantic(err) => write!(f, "{}", err),
+            Error::TypeMismatch { want, got } => {
+                write!(
+                    f,
+                    "\n\n{}\n\n{}\n{}\n{}\n{}\n",
+                    "unexpected types:".red().bold(),
+                    "want:".green().bold(),
+                    want.iter().fold(String::new(), |acc, (name, poly)| acc
+                        + &format!("\t{}: {}\n", name, poly)),
+                    "got:".red().bold(),
+                    got.iter().fold(String::new(), |acc, (name, poly)| acc
+                        + &format!("\t{}: {}\n", name, poly))
+                )
+            }
+        }
+    }
 }
 
 impl Error {

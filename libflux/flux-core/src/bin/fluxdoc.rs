@@ -7,8 +7,8 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
+use clap::{Parser, Subcommand};
 use rayon::prelude::*;
-use structopt::StructOpt;
 
 use fluxcore::{
     doc::{self, example},
@@ -16,37 +16,44 @@ use fluxcore::{
     DatabaseBuilder, Flux, FluxBase,
 };
 
-#[derive(Debug, StructOpt)]
-#[structopt(about = "generate and validate Flux source code documentation")]
+/// Generate and validate Flux source code documentation
+#[derive(Debug, Parser)]
+#[command(about = "generate and validate Flux source code documentation")]
+struct Cli {
+    #[command(subcommand)]
+    command: FluxDoc,
+}
+
+#[derive(Debug, Subcommand)]
 enum FluxDoc {
-    /// Dump JSON encoding of documentation from Flux source code.
+    /// Dump JSON encoding of documentation from Flux source code
     Dump {
         /// Path to flux command, must be the cmd from internal/cmd/flux
-        #[structopt(long, parse(from_os_str))]
+        #[arg(long, value_name = "PATH")]
         flux_cmd_path: Option<PathBuf>,
-        /// Directory containing Flux source code.
-        #[structopt(short, long, parse(from_os_str))]
+        /// Directory containing Flux source code
+        #[arg(short, long, value_name = "DIR")]
         dir: PathBuf,
-        /// Output file, stdout if not present.
-        #[structopt(short, long, parse(from_os_str))]
+        /// Output file, stdout if not present
+        #[arg(short, long, value_name = "FILE")]
         output: Option<PathBuf>,
-        /// Whether to structure the documentation as nested pacakges.
-        #[structopt(short, long)]
+        /// Whether to structure the documentation as nested packages
+        #[arg(short, long)]
         nested: bool,
-        /// Whether to omit full descriptions and keep only the short form docs.
-        #[structopt(long)]
+        /// Whether to omit full descriptions and keep only the short form docs
+        #[arg(long)]
         short: bool,
     },
     /// Check Flux source code for documentation linting errors
     Lint {
         /// Path to flux command, must be the cmd from internal/cmd/flux
-        #[structopt(long, parse(from_os_str))]
+        #[arg(long, value_name = "PATH")]
         flux_cmd_path: Option<PathBuf>,
-        /// Directory containing Flux source code.
-        #[structopt(short, long, parse(from_os_str))]
+        /// Directory containing Flux source code
+        #[arg(short, long, value_name = "DIR")]
         dir: PathBuf,
-        /// Limit the number of diagnostics to report. Default 10. 0 means no limit.
-        #[structopt(short, long)]
+        /// Limit the number of diagnostics to report. Default 10. 0 means no limit
+        #[arg(short, long)]
         limit: Option<i64>,
     },
 }
@@ -54,8 +61,8 @@ enum FluxDoc {
 fn main() -> Result<()> {
     env_logger::init();
 
-    let app = FluxDoc::from_args();
-    match app {
+    let cli = Cli::parse();
+    match cli.command {
         FluxDoc::Dump {
             flux_cmd_path,
             dir,

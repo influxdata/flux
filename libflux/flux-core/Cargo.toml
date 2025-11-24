@@ -1,7 +1,7 @@
 [package]
 name = "flux-core"
 version = "0.155.0"
-rust-version = "1.80"
+rust-version = "1.82"
 authors = ["Flux Team <flux-developers@influxdata.com>"]
 edition = "2021"
 
@@ -46,41 +46,41 @@ codespan-reporting = "0.11"
 crossbeam-channel = { version = "0.5", optional = true }
 csv = { version = "1.1", optional = true }
 derivative = "2.1.1"
-derive_more = { version = "0.99.17", default-features = false, features = [
+derive_more = { version = "2.0", default-features = false, features = [
     "display",
     "from",
 ] }
 ena = "0.14"
-env_logger = "0.9"
+env_logger = "0.11"
 flatbuffers = "25.9.23"
 fnv = "1.0.7"
 indexmap = "1"
-libflate = "1.2.0"
+libflate = "2.2"
 log = "0.4.16"
 lsp-types = { version = "0.97", optional = true }
 maplit = "1.0.2"
 ordered-float = { version = "3", features = ["serde"] }
 pad = { version = "0.1.6", optional = true }
-pulldown-cmark = { version = "0.9.0", default-features = false, optional = true }
+pulldown-cmark = { version = "0.13", default-features = false, optional = true }
 pretty = "0.11.2"
-rayon = { version = "1.5.2", optional = true }
-regex = "1.5.5"
+rayon = { version = "1.11", optional = true }
+regex = "1.11"
 salsa = "0.17.0-pre.2"
 serde = { version = "^1.0.136", features = ["derive", "rc"] }
 serde_derive = "^1.0.136"
 serde_json = "1.0.79"
-structopt = "0.3.26"
+clap = { version = "4", features = ["derive"] }
 thiserror = "1"
 tempfile = { version = "3.3.0", optional = true }
 walkdir = "2.2.9"
 
-rusqlite = { version = "0.29", optional = true }
+rusqlite = { version = "0.37", optional = true }
 pretty_assertions = { version = "1", optional = true }
 
 [dev-dependencies]
 colored = "2.0"
 criterion = "0.3.3"
-env_logger = "0.9"
+env_logger = "0.11"
 expect-test = "1.2.2"
 pretty_assertions = "1.2.1"
 

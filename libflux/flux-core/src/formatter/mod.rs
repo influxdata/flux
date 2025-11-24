@@ -2110,4 +2110,5 @@ fn starts_with_comment(n: Node) -> bool {
 }
 
 #[cfg(test)]
+/// Test helpers and utilities for formatter
 pub mod tests;

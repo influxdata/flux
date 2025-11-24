@@ -1,32 +1,31 @@
 use std::{io, path::PathBuf};
 
 use anyhow::{anyhow, Context as _, Error, Result};
+use clap::Parser;
 use rayon::prelude::*;
 use serde::Deserialize;
-use structopt::StructOpt;
 
 use fluxcore::semantic::{self, import::Packages, Analyzer};
 
-#[derive(Debug, StructOpt)]
-#[structopt(about = "analyze a query log database")]
+/// Analyze a query log database
+#[derive(Debug, Parser)]
 struct AnalyzeQueryLog {
-    #[structopt(long, help = "How many sources to skip")]
+    /// How many sources to skip
+    #[arg(long)]
     skip: Option<usize>,
-    #[structopt(
-        long,
-        min_values = 1,
-        use_delimiter = true,
-        help = "Which new features to compare against"
-    )]
+
+    /// Which new features to compare against
+    #[arg(long, value_delimiter = ',', num_args = 1..)]
     new_features: Vec<semantic::Feature>,
-    #[structopt(
-        long,
-        help = "Report differences when the script fails to compile under both sets of features"
-    )]
+
+    /// Report differences when the script fails to compile under both sets of features
+    #[arg(long)]
     report_already_failing_scripts: bool,
+
     database: PathBuf,
 
-    #[structopt(long, help = "Prints the source code for each script in the input")]
+    /// Prints the source code for each script in the input
+    #[arg(long)]
     print_sources: bool,
 }
 
@@ -79,7 +78,7 @@ where
 fn main() -> Result<()> {
     env_logger::init();
 
-    let app = AnalyzeQueryLog::from_args();
+    let app = AnalyzeQueryLog::parse();
 
     let new_config = semantic::AnalyzerConfig {
         features: app.new_features,

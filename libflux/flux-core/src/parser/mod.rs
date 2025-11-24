@@ -1455,6 +1455,7 @@ impl<'input> Parser<'input> {
     // It returns Result::Ok(po) containing the postfix operator created.
     // If it fails to find a postix operator, it returns Result::Err(expr) containing the original
     // expression passed. This allows for further reuse of the given `expr`.
+    #[allow(clippy::result_large_err)]
     fn parse_postfix_operator(&mut self, expr: Expression) -> Result<Expression, Expression> {
         let t = self.peek();
         match t.tok {
@@ -2011,24 +2012,21 @@ impl<'input> Parser<'input> {
             _ => {
                 let t = t.clone();
                 let mut expr = self.parse_expression_while_more(None, &[]);
-                match expr {
-                    None => {
-                        expr = Some(Expression::Bad(Box::new(BadExpr {
-                            // Do not use `self.base_node_*` in order not to steal errors.
-                            // The BadExpr is an error per se. We want to leave errors to parents.
-                            base: BaseNode {
-                                location: self.source_location(
-                                    &ast::Position::from(&t.start_pos),
-                                    &ast::Position::from(&t.end_pos),
-                                ),
-                                ..BaseNode::default()
-                            },
-                            text: t.lit,
-                            expression: None,
-                        })));
-                    }
-                    Some(_) => (),
-                };
+                if expr.is_none() {
+                    expr = Some(Expression::Bad(Box::new(BadExpr {
+                        // Do not use `self.base_node_*` in order not to steal errors.
+                        // The BadExpr is an error per se. We want to leave errors to parents.
+                        base: BaseNode {
+                            location: self.source_location(
+                                &ast::Position::from(&t.start_pos),
+                                &ast::Position::from(&t.end_pos),
+                            ),
+                            ..BaseNode::default()
+                        },
+                        text: t.lit,
+                        expression: None,
+                    })));
+                }
                 let rparen = self.close(TokenType::RParen);
                 Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
