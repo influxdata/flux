@@ -175,9 +175,9 @@ func mssqlAzureAuthToken(method string, cfg *AzureConfig) (azcore.TokenCredentia
 		return azidentity.NewManagedIdentityCredential(nil)
 
 	case mssqlAzureAuthEnv:
-		// Environment-based authentication using DefaultAzureCredential
+		// Environment-based authentication using EnvironmentCredential
 		// This supports multiple authentication methods via environment variables
-		return azidentity.NewDefaultAzureCredential(nil)
+		return azidentity.NewEnvironmentCredential(nil)
 
 	case mssqlAzureAuthFile:
 		// File-based authentication
