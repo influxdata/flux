@@ -7,7 +7,7 @@ import (
 // There are cases when database connection cannot be open with `sql.Open(driverName, dsn)`.
 // When Azure SQL server is to be accessed, it is necessary to call sql.Open(connector) function instead,
 // because the connector instance has access to authorization token required for the Azure SQL database access.
-// See [https://github.com/denisenkom/go-mssqldb#azure-active-directory-authentication---preview].
+// See [https://github.com/microsoft/go-mssqldb#azure-active-directory-authentication].
 // Example:
 //
 // conn, err := mssql.NewAccessTokenConnector(

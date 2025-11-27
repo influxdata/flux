@@ -3,16 +3,18 @@
 package sql
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
 	neturl "net/url"
 	"os"
 
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/denisenkom/go-mssqldb"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	mssql "github.com/microsoft/go-mssqldb"
 )
 
 //
@@ -33,7 +35,7 @@ import (
 //  1) "azure tenant id=77...;azure client id=58...;azure username=some@myorg;azure password=a1..."
 // 4. "azure auth=MSI" - requires no other info but it works only in Azure VM with managed identity set
 //
-// See https://docs.microsoft.com/en-us/azure/developer/go/azure-sdk-authorization for details.
+// See https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication for details.
 //
 
 // Azure authentication config
@@ -56,9 +58,9 @@ const (
 	mssqlAzureAuthMsi    = "MANAGED_IDENTITY"
 )
 
-// Azure resource ie. Azure SQL Server
+// Azure SQL scope for OAuth 2.0 authentication
 const (
-	mssqlAzureResource = "https://database.windows.net/"
+	mssqlAzureSQLScope = "https://database.windows.net/.default"
 )
 
 // Connection parameter keys for azure authentication
@@ -113,17 +115,19 @@ func mssqlOpenFunction(driverName, dataSourceName string) openFunc {
 	}
 
 	return func() (*sql.DB, error) {
-		var spt *adal.ServicePrincipalToken
-		spt, err := mssqlAzureAuthToken(cfg.AzureAuth, cfg.AzureConfig)
+		credential, err := mssqlAzureAuthToken(cfg.AzureAuth, cfg.AzureConfig)
 		if err != nil {
 			return nil, err
 		}
 		connector, err := mssql.NewAccessTokenConnector(dataSourceName, func() (string, error) {
-			if e := spt.EnsureFresh(); e != nil {
-				return "", e
+			ctx := context.Background()
+			token, err := credential.GetToken(ctx, policy.TokenRequestOptions{
+				Scopes: []string{mssqlAzureSQLScope},
+			})
+			if err != nil {
+				return "", err
 			}
-			t := spt.OAuthToken()
-			return t, nil
+			return token.Token, nil
 		})
 		if err != nil {
 			return nil, err
@@ -133,84 +137,88 @@ func mssqlOpenFunction(driverName, dataSourceName string) openFunc {
 	}
 }
 
-func mssqlAzureAuthToken(method string, cfg *AzureConfig) (*adal.ServicePrincipalToken, error) {
-	fromEnvSettings := func(settings auth.EnvironmentSettings) (*adal.ServicePrincipalToken, error) { // see auth.EnvironmentSettings.GetAuthorizer()
-		if c, err := settings.GetClientCredentials(); err == nil {
-			return c.ServicePrincipalToken()
-		}
-		if c, err := settings.GetClientCertificate(); err == nil {
-			return c.ServicePrincipalToken()
-		}
-		if c, err := settings.GetUsernamePassword(); err == nil {
-			return c.ServicePrincipalToken()
-		}
-		return mssqlAzureMSIToken(settings.GetMSI())
-	}
+func mssqlAzureAuthToken(method string, cfg *AzureConfig) (azcore.TokenCredential, error) {
 	switch method {
 	case mssqlAzureAuthConfig:
-		settings := auth.EnvironmentSettings{
-			Values: map[string]string{
-				auth.Resource: mssqlAzureResource,
-			},
-			Environment: azure.PublicCloud,
+		// Try authentication methods in order based on what credentials are provided
+		if cfg.ClientSecret != "" {
+			// Client Secret authentication
+			return azidentity.NewClientSecretCredential(cfg.TenantId, cfg.ClientId, cfg.ClientSecret, nil)
 		}
-		settings.Values[auth.TenantID] = cfg.TenantId
-		settings.Values[auth.ClientID] = cfg.ClientId
-		settings.Values[auth.ClientSecret] = cfg.ClientSecret
-		settings.Values[auth.CertificatePath] = cfg.CertificatePath
-		settings.Values[auth.CertificatePassword] = cfg.CertificatePassword
-		settings.Values[auth.Username] = cfg.Username
-		settings.Values[auth.Password] = cfg.Password
-		return fromEnvSettings(settings)
+		if cfg.CertificatePath != "" {
+			// Certificate-based authentication
+			certData, err := os.ReadFile(cfg.CertificatePath)
+			if err != nil {
+				return nil, errors.Newf(codes.Invalid, "failed to read certificate file: %v", err)
+			}
+			certs, key, err := azidentity.ParseCertificates(certData, []byte(cfg.CertificatePassword))
+			if err != nil {
+				return nil, errors.Newf(codes.Invalid, "failed to parse certificate: %v", err)
+			}
+			return azidentity.NewClientCertificateCredential(cfg.TenantId, cfg.ClientId, certs, key, nil)
+		}
+		if cfg.Username != "" && cfg.Password != "" {
+			// Username/Password authentication
+			return azidentity.NewUsernamePasswordCredential(cfg.TenantId, cfg.ClientId, cfg.Username, cfg.Password, nil)
+		}
+		return nil, errors.Newf(codes.Invalid, "insufficient authentication credentials provided")
+
 	case mssqlAzureAuthMsi:
-		mc := auth.NewMSIConfig()
-		mc.Resource = mssqlAzureResource
-		return mssqlAzureMSIToken(mc)
+		// Managed Identity authentication
+		if cfg != nil && cfg.ClientId != "" {
+			// User-assigned managed identity
+			return azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{
+				ID: azidentity.ClientID(cfg.ClientId),
+			})
+		}
+		// System-assigned managed identity
+		return azidentity.NewManagedIdentityCredential(nil)
+
 	case mssqlAzureAuthEnv:
-		settings, err := auth.GetSettingsFromEnvironment()
+		// Environment-based authentication using EnvironmentCredential
+		// This supports multiple authentication methods via environment variables
+		return azidentity.NewEnvironmentCredential(nil)
+
+	case mssqlAzureAuthFile:
+		// File-based authentication
+		authData, err := os.ReadFile(cfg.Location)
 		if err != nil {
-			return nil, err
+			return nil, errors.Newf(codes.Invalid, "failed to read authentication file: %v", err)
 		}
-		return fromEnvSettings(settings)
-	case mssqlAzureAuthFile: // see auth.GetSettingsFromFile()
-		os.Setenv("AZURE_AUTH_LOCATION", cfg.Location)
-		defer os.Unsetenv("AZURE_AUTH_LOCATION")
-		settings, err := auth.GetSettingsFromFile()
-		if err != nil {
-			return nil, err
+
+		// Parse the auth file (typically JSON format)
+		var authFile struct {
+			ClientID                string `json:"clientId"`
+			ClientSecret            string `json:"clientSecret"`
+			TenantID                string `json:"tenantId"`
+			CertificatePath         string `json:"certificatePath"`
+			CertificatePassword     string `json:"certificatePassword"`
+			ActiveDirectoryEndpoint string `json:"activeDirectoryEndpointUrl"`
 		}
-		if t, err := settings.ServicePrincipalTokenFromClientCredentialsWithResource(mssqlAzureResource); err == nil {
-			return t, nil
+		if err := json.Unmarshal(authData, &authFile); err != nil {
+			return nil, errors.Newf(codes.Invalid, "failed to parse authentication file: %v", err)
 		}
-		if t, err := settings.ServicePrincipalTokenFromClientCertificateWithResource(mssqlAzureResource); err == nil {
-			return t, nil
+
+		// Try client secret first
+		if authFile.ClientSecret != "" {
+			return azidentity.NewClientSecretCredential(authFile.TenantID, authFile.ClientID, authFile.ClientSecret, nil)
 		}
+
+		// Try certificate
+		if authFile.CertificatePath != "" {
+			certData, err := os.ReadFile(authFile.CertificatePath)
+			if err != nil {
+				return nil, errors.Newf(codes.Invalid, "failed to read certificate file from auth file: %v", err)
+			}
+			certs, key, err := azidentity.ParseCertificates(certData, []byte(authFile.CertificatePassword))
+			if err != nil {
+				return nil, errors.Newf(codes.Invalid, "failed to parse certificate from auth file: %v", err)
+			}
+			return azidentity.NewClientCertificateCredential(authFile.TenantID, authFile.ClientID, certs, key, nil)
+		}
+
 		return nil, errors.Newf(codes.Invalid, "only client credentials and certificate authentication is supported with authentication file")
-
-	}
-	return nil, errors.Newf(codes.Invalid, "unsupportedauthentication")
-}
-
-// Gets MSI token.
-// This is extracted from auth.MSIConfig.Authorizer()
-// Pending PR #520 to Azure/go-autorest to get rid off this.
-func mssqlAzureMSIToken(mc auth.MSIConfig) (*adal.ServicePrincipalToken, error) {
-	msiEndpoint, err := adal.GetMSIEndpoint()
-	if err != nil {
-		return nil, err
 	}
 
-	var spToken *adal.ServicePrincipalToken
-	if mc.ClientID == "" {
-		spToken, err = adal.NewServicePrincipalTokenFromMSI(msiEndpoint, mc.Resource)
-		if err != nil {
-			return nil, errors.Newf(codes.Internal, "failed to get oauth token from MSI: %v", err)
-		}
-	} else {
-		spToken, err = adal.NewServicePrincipalTokenFromMSIWithUserAssignedID(msiEndpoint, mc.Resource, mc.ClientID)
-		if err != nil {
-			return nil, errors.Newf(codes.Internal, "failed to get oauth token from MSI for user assigned identity: %v", err)
-		}
-	}
-	return spToken, nil
+	return nil, errors.Newf(codes.Invalid, "unsupported authentication method")
 }
