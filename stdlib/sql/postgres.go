@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
-	"github.com/lib/pq"
 )
 
 type PostgresRowReader struct {
@@ -161,5 +162,5 @@ func PostgresColumnTranslateFunc() translationFunc {
 }
 
 func postgresQuoteIdent(name string) string {
-	return pq.QuoteIdentifier(name)
+	return pgx.Identifier{name}.Sanitize()
 }
