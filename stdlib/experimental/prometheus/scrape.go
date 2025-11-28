@@ -3,6 +3,7 @@ package prometheus
 import (
 	// Go stdlib and other packages
 
+	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -13,7 +14,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/runtime"
-	"github.com/matttproud/golang_protobuf_extensions/pbutil"
+	"google.golang.org/protobuf/encoding/protodelim"
 
 	// Flux packages
 	"github.com/influxdata/flux"
@@ -181,9 +182,13 @@ func (p *PrometheusIterator) parse(reader io.Reader, header http.Header) (err er
 	if mediatype == "application/vnd.google.protobuf" &&
 		params["encoding"] == "delimited" &&
 		params["proto"] == "io.prometheus.client.MetricFamily" {
+		r, ok := reader.(protodelim.Reader)
+		if !ok {
+			r = bufio.NewReader(reader)
+		}
 		for {
 			mf := &dto.MetricFamily{}
-			if _, err := pbutil.ReadDelimited(reader, mf); err != nil {
+			if err := protodelim.UnmarshalFrom(r, mf); err != nil {
 				if err == io.EOF {
 					break
 				}
