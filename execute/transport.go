@@ -16,8 +16,9 @@ import (
 	"github.com/influxdata/flux/internal/jaeger"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -64,7 +65,7 @@ type consecutiveTransport struct {
 	totalMsgs      int32
 
 	initSpanOnce sync.Once
-	span         opentracing.Span
+	span         trace.Span
 }
 
 func newConsecutiveTransport(ctx context.Context, dispatcher Dispatcher, t Transformation, n plan.Node, logger *zap.Logger, mem memory.Allocator) *consecutiveTransport {
@@ -231,13 +232,16 @@ func (t *consecutiveTransport) transition(new int32) {
 
 func (t *consecutiveTransport) initSpan(ctx context.Context) {
 	t.initSpanOnce.Do(func() {
-		t.span, _ = opentracing.StartSpanFromContext(ctx, t.profile.NodeType, opentracing.Tag{Key: "label", Value: t.profile.Label})
+		_, t.span = otel.Tracer("flux").Start(ctx, t.profile.NodeType, trace.WithAttributes(attribute.String("label", t.profile.Label)))
 	})
 }
 
 func (t *consecutiveTransport) finishSpan(err error) {
-	t.span.LogFields(log.Int("messages_processed", int(atomic.LoadInt32(&t.totalMsgs))), log.Error(err))
-	t.span.Finish()
+	if err != nil {
+		t.span.RecordError(err)
+	}
+	t.span.SetAttributes(attribute.Int("messages_processed", int(atomic.LoadInt32(&t.totalMsgs))))
+	t.span.End()
 }
 
 func (t *consecutiveTransport) processMessages(ctx context.Context, throughput int) {
@@ -559,7 +563,7 @@ func (t *consecutiveTransportTable) Do(f func(flux.ColReader) error) error {
 			}
 
 			ctx, logger := t.transport.ctx, t.transport.logger
-			if span := opentracing.SpanFromContext(ctx); span != nil {
+			if span := trace.SpanFromContext(ctx); span.SpanContext().IsValid() {
 				if traceID, sampled, found := jaeger.InfoFromSpan(span); found {
 					fields = append(fields,
 						zap.String("tracing/id", traceID),

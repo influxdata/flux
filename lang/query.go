@@ -7,7 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/memory"
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // query implements the flux.Query interface.
@@ -16,7 +16,7 @@ type query struct {
 	results chan flux.Result
 	stats   flux.Statistics
 	alloc   *memory.ResourceAllocator
-	span    opentracing.Span
+	span    trace.Span
 	cancel  func()
 	err     error
 	wg      sync.WaitGroup
@@ -32,7 +32,7 @@ func (q *query) Done() {
 	q.stats.MaxAllocated = q.alloc.MaxAllocated()
 	q.stats.TotalAllocated = q.alloc.TotalAllocated()
 	if q.span != nil {
-		q.span.Finish()
+		q.span.End()
 		q.span = nil
 	}
 

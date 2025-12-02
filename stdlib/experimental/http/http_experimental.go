@@ -15,8 +15,9 @@ import (
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // http get mirrors the http post originally completed for alerts & notifications
@@ -82,14 +83,15 @@ var get = values.NewFunction(
 		}
 
 		statusCode, body, headers, err := func(req *http.Request) (int, []byte, values.Object, error) {
-			s, cctx := opentracing.StartSpanFromContext(ctx, "http.get")
-			s.SetTag("url", req.URL.String())
-			defer s.Finish()
+			ctx, s := otel.Tracer("flux").Start(ctx, "http.get",
+				trace.WithAttributes(attribute.String("url", req.URL.String())),
+			)
+			defer s.End()
 
-			ccctx, cncl := context.WithTimeout(cctx, theTimeout.Duration())
+			cctx, cncl := context.WithTimeout(ctx, theTimeout.Duration())
 			defer cncl()
 
-			req = req.WithContext(ccctx)
+			req = req.WithContext(cctx)
 			response, err := dc.Do(req)
 			if err != nil {
 				// Alias the DNS lookup error so as not to disclose the
@@ -105,9 +107,9 @@ var get = values.NewFunction(
 			if err != nil {
 				return 0, nil, nil, err
 			}
-			s.LogFields(
-				log.Int("statusCode", response.StatusCode),
-				log.Int("responseSize", len(body)),
+			s.SetAttributes(
+				attribute.Int("statusCode", response.StatusCode),
+				attribute.Int("responseSize", len(body)),
 			)
 			return response.StatusCode, body, headerToObject(response.Header), nil
 		}(req)

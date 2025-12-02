@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -30,8 +29,9 @@ import (
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/mocktracer"
+	"go.opentelemetry.io/otel"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
 func init() {
@@ -829,11 +829,14 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 }
 
 func TestQueryTracing(t *testing.T) {
-	// temporarily install a mock tracer to see which spans are created.
-	oldTracer := opentracing.GlobalTracer()
-	defer opentracing.SetGlobalTracer(oldTracer)
-	mockTracer := mocktracer.New()
-	opentracing.SetGlobalTracer(mockTracer)
+	// Set up an in-memory span exporter to capture spans
+	exporter := tracetest.NewInMemoryExporter()
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithSyncer(exporter),
+	)
+	oldTP := otel.GetTracerProvider()
+	otel.SetTracerProvider(tp)
+	defer otel.SetTracerProvider(oldTP)
 
 	ctx := context.Background()
 
@@ -870,16 +873,17 @@ func TestQueryTracing(t *testing.T) {
 
 	// If tracing was enabled, then we should see spans for each
 	// transformation.
-	var executeSpanId int
-	for _, span := range mockTracer.FinishedSpans() {
-		if span.OperationName == "execute" {
-			if executeSpanId != 0 {
+	spans := exporter.GetSpans()
+	var executeSpanID string
+	for _, span := range spans {
+		if span.Name == "execute" {
+			if executeSpanID != "" {
 				t.Errorf("found multiple spans for operation %q", "execute")
 			}
-			executeSpanId = span.SpanContext.SpanID
+			executeSpanID = span.SpanContext.SpanID().String()
 		}
 	}
-	if executeSpanId == 0 {
+	if executeSpanID == "" {
 		t.Errorf("did not find %q span", "execute")
 	}
 
@@ -893,10 +897,10 @@ func TestQueryTracing(t *testing.T) {
 		{opName: "*array.tableSource"},
 	}
 	for _, wantSpan := range wantSpans {
-		var gotSpan *mocktracer.MockSpan
-		for _, sp := range mockTracer.FinishedSpans() {
-			if wantSpan.opName == sp.OperationName {
-				gotSpan = sp
+		var gotSpan *tracetest.SpanStub
+		for i := range spans {
+			if wantSpan.opName == spans[i].Name {
+				gotSpan = &spans[i]
 				break
 			}
 		}
@@ -904,28 +908,26 @@ func TestQueryTracing(t *testing.T) {
 			t.Fatalf("did not find span for operation %v", wantSpan.opName)
 		}
 		// Make sure the parent ID is the execute span
-		if gotSpan.ParentID != executeSpanId {
-			t.Errorf("expected span for %q to have execute parent ID of %v but it was %v", wantSpan.opName, executeSpanId, gotSpan.ParentID)
+		if gotSpan.Parent.SpanID().String() != executeSpanID {
+			t.Errorf("expected span for %q to have execute parent ID of %v but it was %v", wantSpan.opName, executeSpanID, gotSpan.Parent.SpanID().String())
 		}
 
-		var msgCount *mocktracer.MockKeyValue
-		for _, lr := range gotSpan.Logs() {
-			for _, kv := range lr.Fields {
-				if kv.Key == "messages_processed" {
-					msgCount = &kv
+		// Check for messages_processed attribute
+		if wantSpan.msgCount != 0 {
+			var msgCount int
+			found := false
+			for _, attr := range gotSpan.Attributes {
+				if string(attr.Key) == "messages_processed" {
+					msgCount = int(attr.Value.AsInt64())
+					found = true
 					break
 				}
 			}
-			if msgCount != nil {
-				break
+			if !found {
+				t.Fatalf("did not find %q attribute for operation %q", "messages_processed", wantSpan.opName)
 			}
-		}
-		if wantSpan.msgCount != 0 {
-			if msgCount == nil {
-				t.Fatalf("did not find %q log for operation %q", "messages_processed", wantSpan.opName)
-			}
-			if want, got := fmt.Sprintf("%d", wantSpan.msgCount), msgCount.ValueString; want != got {
-				t.Errorf("got unexpected message count for operation %q; -want/+got: %v/%v ", wantSpan.opName, want, got)
+			if wantSpan.msgCount != msgCount {
+				t.Errorf("got unexpected message count for operation %q; -want/+got: %v/%v ", wantSpan.opName, wantSpan.msgCount, msgCount)
 			}
 		}
 	}

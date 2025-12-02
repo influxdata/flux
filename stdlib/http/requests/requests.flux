@@ -165,7 +165,7 @@ do = (
 //
 // ### Make a POST request with a JSON body and decode JSON response
 //
-// ```
+// ```no_run
 // import "http/requests"
 // import ejson "experimental/json"
 // import "json"

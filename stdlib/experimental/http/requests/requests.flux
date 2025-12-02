@@ -173,7 +173,7 @@ do =
 //
 // ### Make a POST request with a JSON body and decode JSON response
 //
-// ```
+// ```no_run
 // import "experimental/http/requests"
 // import ejson "experimental/json"
 // import "json"

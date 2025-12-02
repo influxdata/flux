@@ -16,7 +16,9 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -523,10 +525,7 @@ func (es *executionState) do() {
 			}
 			profileSpan := profile.StartSpan()
 
-			if span, spanCtx := opentracing.StartSpanFromContext(ctx, opName, opentracing.Tag{Key: "label", Value: src.Label()}); span != nil {
-				ctx = spanCtx
-				defer span.Finish()
-			}
+			ctx, span := otel.Tracer("flux").Start(ctx, opName, trace.WithAttributes(attribute.String("label", src.Label())))
 
 			defer wg.Done()
 
@@ -534,6 +533,7 @@ func (es *executionState) do() {
 			defer es.recover()
 			src.Run(ctx)
 			profileSpan.Finish()
+			span.End()
 
 			updateStats(func(stats *flux.Statistics) {
 				stats.Profiles = append(stats.Profiles, profile)

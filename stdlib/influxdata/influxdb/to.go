@@ -22,7 +22,8 @@ import (
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // ToKind is the kind for the `to` flux function
@@ -66,7 +67,7 @@ type toTransformation struct {
 	implicitTagColumns bool
 	tagColumns         []string
 	writer             influxdb.Writer
-	span               opentracing.Span
+	span               trace.Span
 }
 
 // NewToTransformation returns a new *ToTransformation with the appropriate fields set.
@@ -85,8 +86,7 @@ func NewToTransformation(ctx context.Context, id execute.DatasetID, spec *ToProc
 		Name: spec.Spec.Bucket,
 	}
 
-	var span opentracing.Span
-	span, ctx = opentracing.StartSpanFromContext(ctx, "ToTransformation.Process")
+	ctx, span := otel.Tracer("flux").Start(ctx, "ToTransformation.Process")
 
 	conf := influxdb.Config{
 		Org:    org,
@@ -344,7 +344,7 @@ func (t *toTransformation) filterNulls(chunk table.Chunk, mem memory.Allocator) 
 }
 
 func (t *toTransformation) Close() error {
-	defer t.span.Finish()
+	defer t.span.End()
 	return t.writer.Close()
 }
 
