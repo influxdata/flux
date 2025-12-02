@@ -157,11 +157,8 @@ func (r *REPL) Input(t string) (*libflux.FluxError, error) {
 func (r *REPL) input(t string) {
 	// Create a root span
 	ctx, span := otel.Tracer("flux").Start(r.ctx, "REPL.input")
-	r.ctx = trace.ContextWithSpan(r.ctx, span)
+	r.ctx = ctx
 	defer span.End()
-
-	_ = ctx // use ctx if needed in future
-
 	if fluxError, err := r.executeLine(t); err != nil {
 		if fluxError != nil {
 			fluxError.Print()
