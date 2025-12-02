@@ -28,7 +28,6 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type REPL struct {
