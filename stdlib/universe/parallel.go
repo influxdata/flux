@@ -11,7 +11,8 @@ import (
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -74,7 +75,7 @@ type PartitionMergeTransformation struct {
 	execute.ExecutionNode
 	ctx     context.Context
 	dataset *execute.PassthroughDataset
-	span    opentracing.Span
+	span    trace.Span
 	alloc   memory.Allocator
 
 	mu               sync.Mutex
@@ -93,8 +94,7 @@ func (t *PartitionMergeTransformation) RetractTable(id execute.DatasetID, key fl
 }
 
 func NewPartitionMergeTransformation(ctx context.Context, dataset *execute.PassthroughDataset, alloc memory.Allocator, spec *PartitionMergeProcedureSpec, predecessors []execute.DatasetID) (*PartitionMergeTransformation, error) {
-	var span opentracing.Span
-	span, ctx = opentracing.StartSpanFromContext(ctx, "PartitionMergeTransformation.Process")
+	ctx, span := otel.Tracer("flux").Start(ctx, "PartitionMergeTransformation.Process")
 
 	predecessorState := make(map[execute.DatasetID]*parallelPredecessorState, len(predecessors))
 	for _, id := range predecessors {
@@ -176,7 +176,7 @@ func (t *PartitionMergeTransformation) UpdateProcessingTime(id execute.DatasetID
 }
 
 func (t *PartitionMergeTransformation) Finish(id execute.DatasetID, err error) {
-	defer t.span.Finish()
+	defer t.span.End()
 
 	t.mu.Lock()
 	defer t.mu.Unlock()

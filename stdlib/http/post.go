@@ -15,8 +15,9 @@ import (
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func init() {
@@ -67,11 +68,12 @@ func init() {
 			}
 
 			statusCode, err := func(req *http.Request) (int, error) {
-				s, cctx := opentracing.StartSpanFromContext(ctx, "http.post")
-				s.SetTag("url", req.URL.String())
-				defer s.Finish()
+				ctx, s := otel.Tracer("flux").Start(ctx, "http.post",
+					trace.WithAttributes(attribute.String("url", req.URL.String())),
+				)
+				defer s.End()
 
-				req = req.WithContext(cctx)
+				req = req.WithContext(ctx)
 				response, err := dc.Do(req)
 				if err != nil {
 					// If an error is returned during a request (from the control
@@ -94,9 +96,9 @@ func init() {
 				wc := iocounter.Writer{Writer: io.Discard}
 				_, _ = io.Copy(&wc, response.Body)
 				_ = response.Body.Close()
-				s.LogFields(
-					log.Int("statusCode", response.StatusCode),
-					log.Int64("responseSize", wc.Count()),
+				s.SetAttributes(
+					attribute.Int("statusCode", response.StatusCode),
+					attribute.Int64("responseSize", wc.Count()),
 				)
 				return response.StatusCode, nil
 			}(req)

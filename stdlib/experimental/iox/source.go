@@ -17,9 +17,9 @@ import (
 	"github.com/influxdata/flux/internal/function"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
-	"github.com/opentracing/opentracing-go/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const SqlKind = "experimental/iox.sql"
@@ -126,9 +126,10 @@ func (s *sqlSource) createSchema(schema *stdarrow.Schema) ([]flux.ColMeta, error
 }
 
 func (s *sqlSource) run(ctx context.Context) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "sqlSouce.run")
-	defer span.Finish()
-	span.LogFields(log.String("query", s.query))
+	ctx, span := otel.Tracer("flux").Start(ctx, "sqlSource.run",
+		trace.WithAttributes(attribute.String("query", s.query)),
+	)
+	defer span.End()
 
 	// Note: query args are not actually supported yet, see
 	// https://github.com/influxdata/influxdb_iox/issues/3718
@@ -147,13 +148,13 @@ func (s *sqlSource) run(ctx context.Context) error {
 	hasMore, err := nextRecordBatch(rr)
 	for hasMore && err == nil {
 		if err := s.produce(key, cols, rr.Record()); err != nil {
-			ext.LogError(span, err)
+			span.RecordError(err)
 			return err
 		}
 		hasMore, err = nextRecordBatch(rr)
 	}
 	if err != nil {
-		ext.LogError(span, err)
+		span.RecordError(err)
 		return err
 	}
 

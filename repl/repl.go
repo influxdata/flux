@@ -27,7 +27,8 @@ import (
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type REPL struct {
@@ -155,9 +156,11 @@ func (r *REPL) Input(t string) (*libflux.FluxError, error) {
 // input processes a line of input and prints the result.
 func (r *REPL) input(t string) {
 	// Create a root span
-	span := opentracing.StartSpan("REPL.input")
-	r.ctx = opentracing.ContextWithSpan(r.ctx, span)
-	defer span.Finish()
+	ctx, span := otel.Tracer("flux").Start(r.ctx, "REPL.input")
+	r.ctx = trace.ContextWithSpan(r.ctx, span)
+	defer span.End()
+
+	_ = ctx // use ctx if needed in future
 
 	if fluxError, err := r.executeLine(t); err != nil {
 		if fluxError != nil {

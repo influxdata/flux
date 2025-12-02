@@ -21,7 +21,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
 
@@ -133,8 +133,8 @@ func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time
 }
 
 func buildPlan(ctx context.Context, spec *operation.Spec, opts *compileOptions) (*plan.Spec, error) {
-	s, _ := opentracing.StartSpanFromContext(ctx, "plan")
-	defer s.Finish()
+	ctx, s := otel.Tracer("flux").Start(ctx, "plan")
+	defer s.End()
 
 	if spec.HasConflict {
 		execute.RecordEvent(ctx, "table-find/disjoint-plan")
@@ -271,8 +271,7 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 	ctx, cancel := context.WithCancel(ctx)
 
 	// This span gets closed by the query when it is done.
-	var s opentracing.Span
-	s, ctx = opentracing.StartSpanFromContext(ctx, "execute")
+	ctx, s := otel.Tracer("flux").Start(ctx, "execute")
 	results := make(chan flux.Result)
 
 	resourceAlloc, ok := alloc.(*memory.ResourceAllocator)
@@ -306,7 +305,7 @@ func (p *Program) Start(ctx context.Context, alloc memory.Allocator) (flux.Query
 	e := execute.NewExecutor(p.Logger)
 	resultMap, statsCh, err := e.Execute(ctx, p.PlanSpec, q.alloc)
 	if err != nil {
-		s.Finish()
+		s.End()
 		return nil, err
 	}
 
@@ -432,7 +431,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc memory.Allocator) (*oper
 		return nil, nil, astErr
 	}
 
-	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
+	ctx, s := otel.Tracer("flux").Start(ctx, "eval")
 
 	// Set the now option to our own default and capture the option itself
 	// to allow us to find it after the run. A user might overwrite the
@@ -443,7 +442,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc memory.Allocator) (*oper
 	// the runtime and flux code in so many places. We should evaluate how
 	// now is used and see if we can improve how now interacts with the system.
 	var nowOpt values.Value
-	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, &ExecOptsConfig{},
+	sideEffects, scope, err := p.Runtime.Eval(ctx, ast, &ExecOptsConfig{},
 		flux.SetNowOption(p.Now),
 		func(r flux.Runtime, scope values.Scope) {
 			nowOpt, _ = scope.Lookup(interpreter.NowOption)
@@ -455,16 +454,16 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc memory.Allocator) (*oper
 	if err != nil {
 		return nil, nil, err
 	}
-	s.Finish()
+	s.End()
 
-	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
-	defer s.Finish()
+	ctx, s = otel.Tracer("flux").Start(ctx, "compile")
+	defer s.End()
 	nowTime, err := nowOpt.Function().Call(ctx, nil)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
 	}
 	p.Now = nowTime.Time().Time()
-	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now, false)
+	sp, err := spec.FromEvaluation(ctx, sideEffects, p.Now, false)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
 	}
@@ -487,24 +486,24 @@ func (p *AstProgram) Start(ctx context.Context, alloc memory.Allocator) (flux.Qu
 	}
 
 	// Planning.
-	s, cctx := opentracing.StartSpanFromContext(ctx, "plan")
+	ctx, s := otel.Tracer("flux").Start(ctx, "plan")
 	if err := p.updateOpts(scope); err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading options while starting program")
 	}
 	if err := p.updateProfilers(ctx, scope); err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading profiler settings while starting program")
 	}
-	ps, err := buildPlan(cctx, sp, p.opts)
+	ps, err := buildPlan(ctx, sp, p.opts)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in building plan while starting program")
 	}
 	p.PlanSpec = ps
-	s.Finish()
+	s.End()
 
 	// Execution.
-	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
-	defer s.Finish()
-	q, err := p.Program.Start(cctx, alloc)
+	ctx, s = otel.Tracer("flux").Start(ctx, "start-program")
+	defer s.End()
+	q, err := p.Program.Start(ctx, alloc)
 	if err != nil {
 		span.Finish()
 		return nil, err

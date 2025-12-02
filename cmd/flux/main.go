@@ -12,9 +12,13 @@ import (
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/repl"
-	"github.com/opentracing/opentracing-go"
 	"github.com/spf13/cobra"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 
 	// Include the sqlite3 driver for vanilla Flux
 	_ "github.com/mattn/go-sqlite3"
@@ -74,31 +78,52 @@ func runE(cmd *cobra.Command, args []string) error {
 func configureTracing(ctx context.Context) (context.Context, func(), error) {
 	if flags.Trace == "" {
 		return ctx, func() {}, nil
-	} else if flags.Trace != "jaeger" {
+	} else if flags.Trace == "jaeger" {
+		fmt.Fprintln(os.Stderr, "Warning: jaeger tracing is no longer supported, use --trace=otlp instead. Continuing without tracing.")
+		return ctx, func() {}, nil
+	} else if flags.Trace != "otlp" {
 		return nil, nil, errors.Newf(codes.Invalid, "unknown tracer name: %s", flags.Trace)
 	}
 
-	cfg, err := jaegercfg.FromEnv()
+	// Create OTLP exporter - uses OTEL_EXPORTER_OTLP_ENDPOINT env var by default
+	exporter, err := otlptracegrpc.New(ctx)
 	if err != nil {
-		return nil, nil, err
-	}
-	if cfg.ServiceName == "" {
-		cfg.ServiceName = "flux"
-	}
-	if cfg.Sampler.Type == "" {
-		cfg.Sampler.Type = "const"
-		cfg.Sampler.Param = 1.0
+		return nil, nil, fmt.Errorf("failed to create OTLP exporter: %w", err)
 	}
 
-	tracer, closer, err := cfg.NewTracer()
-	if err != nil {
-		return nil, nil, err
+	// Get service name from environment or use default
+	serviceName := "flux"
+	if name := os.Getenv("OTEL_SERVICE_NAME"); name != "" {
+		serviceName = name
 	}
 
-	opentracing.SetGlobalTracer(tracer)
+	// Create resource with service name
+	res, err := resource.New(ctx,
+		resource.WithAttributes(
+			semconv.ServiceNameKey.String(serviceName),
+		),
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create resource: %w", err)
+	}
+
+	// Create TracerProvider with the exporter
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(res),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+	)
+
+	// Set as global tracer provider
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
+
 	return ctx, func() {
-		if err := closer.Close(); err != nil {
-			fmt.Printf("error closing tracer: %s.\n", err)
+		if err := tp.Shutdown(context.Background()); err != nil {
+			fmt.Printf("error shutting down tracer provider: %s.\n", err)
 		}
 	}, nil
 }
@@ -120,9 +145,9 @@ func main() {
 	}
 	fluxCmd.Flags().BoolVarP(&flags.ExecScript, "exec", "e", false, "Interpret file argument as a raw flux script")
 	fluxCmd.Flags().BoolVarP(&flags.EnableSuggestions, "enable-suggestions", "", false, "enable suggestions in the repl")
-	fluxCmd.Flags().StringVar(&flags.Trace, "trace", "", "Trace query execution")
+	fluxCmd.Flags().StringVar(&flags.Trace, "trace", "", "Trace query execution (otlp)")
 	fluxCmd.Flags().StringVarP(&flags.Format, "format", "", "cli", "Output format one of: cli,csv. Defaults to cli")
-	fluxCmd.Flag("trace").NoOptDefVal = "jaeger"
+	fluxCmd.Flag("trace").NoOptDefVal = "otlp"
 	fluxCmd.Flags().StringVar(&flags.Features, "features", "", "JSON object specifying the features to execute with. See internal/feature/flags.yml for a list of the current features")
 
 	fmtCmd := &cobra.Command{

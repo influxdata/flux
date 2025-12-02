@@ -12,7 +12,9 @@ import (
 	"github.com/influxdata/flux/internal/operation"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type ider struct {
@@ -72,23 +74,24 @@ func FromEvaluation(ctx context.Context, ses []interpreter.SideEffect, now time.
 
 	for _, se := range ses {
 		if op, ok := se.Value.(*flux.TableObject); ok {
-			s, cctx := opentracing.StartSpanFromContext(ctx, "toSpec")
-			s.SetTag("opKind", op.Kind)
+			ctx, s := otel.Tracer("flux").Start(ctx, "toSpec",
+				trace.WithAttributes(attribute.String("opKind", string(op.Kind))),
+			)
 			if se.Node != nil {
-				s.SetTag("loc", se.Node.Location().String())
+				s.SetAttributes(attribute.String("loc", se.Node.Location().String()))
 			}
 
-			if !isDuplicateTableObject(cctx, op, objs) {
+			if !isDuplicateTableObject(ctx, op, objs) {
 				// Don't bother incrementing the count if this is a yield which
 				// will be skipped anyway.
 				if !(skipYields && op.Kind == "yield") {
 					resultCount += 1
 				}
-				buildSpecWithTrace(cctx, op, ider, spec, seen, skipYields)
+				buildSpecWithTrace(ctx, op, ider, spec, seen, skipYields)
 				objs = append(objs, op)
 			}
 
-			s.Finish()
+			s.End()
 		}
 	}
 
@@ -113,8 +116,8 @@ func FromEvaluation(ctx context.Context, ses []interpreter.SideEffect, now time.
 }
 
 func isDuplicateTableObject(ctx context.Context, op *flux.TableObject, objs []*flux.TableObject) bool {
-	s, _ := opentracing.StartSpanFromContext(ctx, "isDuplicate")
-	defer s.Finish()
+	_, s := otel.Tracer("flux").Start(ctx, "isDuplicate")
+	defer s.End()
 
 	for _, tableObject := range objs {
 		if op == tableObject {
@@ -125,10 +128,11 @@ func isDuplicateTableObject(ctx context.Context, op *flux.TableObject, objs []*f
 }
 
 func buildSpecWithTrace(ctx context.Context, t *flux.TableObject, ider *ider, spec *operation.Spec, visited map[*flux.TableObject]bool, skipYields bool) {
-	s, cctx := opentracing.StartSpanFromContext(ctx, "buildSpec")
-	s.SetTag("opKind", t.Kind)
-	buildSpec(cctx, t, ider, spec, visited, skipYields)
-	s.Finish()
+	ctx, s := otel.Tracer("flux").Start(ctx, "buildSpec",
+		trace.WithAttributes(attribute.String("opKind", string(t.Kind))),
+	)
+	buildSpec(ctx, t, ider, spec, visited, skipYields)
+	s.End()
 }
 
 func buildSpec(ctx context.Context, t *flux.TableObject, ider *ider, spec *operation.Spec, visited map[*flux.TableObject]bool, skipYields bool) {
@@ -200,25 +204,26 @@ func FromTableObject(ctx context.Context, to *flux.TableObject, now time.Time) (
 // This is duplicate logic for what happens when a flux.Program runs.
 // This function is used in tests that compare flux.Specs (e.g. in planner tests).
 func FromScript(ctx context.Context, runtime flux.Runtime, now time.Time, script string) (*operation.Spec, error) {
-	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
+	tracer := otel.Tracer("flux")
+	ctx, s := tracer.Start(ctx, "parse")
 	astPkg, err := runtime.Parse(ctx, script)
 	if err != nil {
 		return nil, err
 	}
-	s.Finish()
+	s.End()
 
 	deps := execute.NewExecutionDependencies(nil, &now, nil)
 	ctx = deps.Inject(ctx)
 
-	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := runtime.Eval(cctx, astPkg, nil, flux.SetNowOption(now))
+	ctx, s = tracer.Start(ctx, "eval")
+	sideEffects, scope, err := runtime.Eval(ctx, astPkg, nil, flux.SetNowOption(now))
 	if err != nil {
 		return nil, err
 	}
-	s.Finish()
+	s.End()
 
-	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
-	defer s.Finish()
+	ctx, s = tracer.Start(ctx, "compile")
+	defer s.End()
 	nowOpt, ok := scope.Lookup(interpreter.NowOption)
 	if !ok {
 		return nil, fmt.Errorf("%q option not set", interpreter.NowOption)
@@ -228,5 +233,5 @@ func FromScript(ctx context.Context, runtime flux.Runtime, now time.Time, script
 		return nil, err
 	}
 
-	return FromEvaluation(cctx, sideEffects, nowTime.Time().Time(), false)
+	return FromEvaluation(ctx, sideEffects, nowTime.Time().Time(), false)
 }
