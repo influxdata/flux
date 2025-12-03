@@ -603,7 +603,7 @@ fn parse_function_doc(
 
     // Validate extra parameters are not documented
     for param in &parameters {
-        if !param.name.is_empty() && !params_on_type.iter().any(|&name| name == &param.name) {
+        if !param.name.is_empty() && !params_on_type.contains(&&param.name) {
             diagnostics.push(Diagnostic {
                 msg: format!("extra documentation for parameter \"{}\"", param.name,),
                 loc: loc.clone(),
@@ -1136,7 +1136,6 @@ impl<'a> Parser<'a> {
             bail!("missing end of heading")
         }
         self.tokens.push(Token::Metadata);
-        let mut range: Range<usize> = Range::default();
         loop {
             match self.iter.next() {
                 Some((
@@ -1148,7 +1147,6 @@ impl<'a> Parser<'a> {
                 )) => {
                     // Heading 2 means we are done with metadata
                     // We found the begining of a new section, emit the line token.
-                    range.end = r.start;
                     self.tokens.push(Token::MetadataLine(self.slice(r)));
                     return self.parse_any_heading_text();
                 }
