@@ -10,7 +10,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.20.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/SAP/go-hdb v1.9.6
+	github.com/SAP/go-hdb v1.14.13
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow-go/v18 v18.4.1
 	github.com/benbjohnson/immutable v0.4.3

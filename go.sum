@@ -87,8 +87,8 @@ github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c h1:RGWPOewvK
 github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c/go.mod h1:X0CRv0ky0k6m906ixxpzmDRLvX58TFUKS2eePweuyxk=
 github.com/Masterminds/semver/v3 v3.3.1 h1:QtNSWtVZ3nBfk8mAOu/B6v7FMJ+NHTIgUPi7rj+4nv4=
 github.com/Masterminds/semver/v3 v3.3.1/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
-github.com/SAP/go-hdb v1.9.6 h1:keGAgt11SnSailK5pOF8v85Ic05vEJM22stidxH6vTs=
-github.com/SAP/go-hdb v1.9.6/go.mod h1:eKGk33q3PZ41Lgua4lmqtKgIXpSEYs0teXePqMAcwBg=
+github.com/SAP/go-hdb v1.14.13 h1:wHq0Px0+omlXpj6jxQG2e8QLaSb5TeHIUCbg1hnWCmk=
+github.com/SAP/go-hdb v1.14.13/go.mod h1:p6N5zhGECK/7oE7l+DVp23QWhr11e09AorFo/Ps6nOk=
 github.com/ajstarks/svgo v0.0.0-20180226025133-644b8db467af/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883 h1:bvNMNQO63//z+xNgfBlViaCIJKLlCJ6/fmUseuG0wVQ=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
