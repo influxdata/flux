@@ -17,7 +17,7 @@ require (
 	github.com/bonitoo-io/go-sql-bigquery v0.3.4
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cespare/xxhash/v2 v2.3.0
-	github.com/dave/jennifer v1.2.0
+	github.com/dave/jennifer v1.7.1
 	github.com/eclipse/paho.mqtt.golang v1.5.1
 	github.com/fatih/color v1.15.0
 	github.com/foxcpp/go-mockdns v0.0.0-20201212160233-ede2f9158d15
