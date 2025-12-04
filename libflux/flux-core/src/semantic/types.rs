@@ -1856,10 +1856,7 @@ impl<T> From<T> for Argument<T> {
 impl Argument<MonoType> {
     fn contains(&self, tv: Tvar) -> bool {
         let Self { default, typ } = self;
-        default
-            .as_ref()
-            .map_or(false, |default| default.contains(tv))
-            || typ.contains(tv)
+        default.as_ref().is_some_and(|default| default.contains(tv)) || typ.contains(tv)
     }
 }
 
@@ -2180,7 +2177,7 @@ impl Function {
         self.req.values().any(|t| t.contains(tv))
             || self.opt.values().any(|t| t.contains(tv))
             || self.retn.contains(tv)
-            || self.pipe.as_ref().map_or(false, |pipe| pipe.v.contains(tv))
+            || self.pipe.as_ref().is_some_and(|pipe| pipe.v.contains(tv))
     }
 }
 

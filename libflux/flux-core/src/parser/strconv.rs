@@ -161,14 +161,8 @@ pub fn parse_duration(lit: &str) -> Result<Vec<ast::Duration>, String> {
     let mut values = Vec::new();
     let mut chars = lit.chars().peekable();
     while chars.peek().is_some() {
-        let magnitude: i64 = match parse_magnitude(&mut chars) {
-            Ok(m) => m,
-            Err(e) => return Err(e),
-        };
-        let unit: String = match parse_unit(&mut chars) {
-            Ok(u) => u,
-            Err(e) => return Err(e),
-        };
+        let magnitude: i64 = parse_magnitude(&mut chars)?;
+        let unit: String = parse_unit(&mut chars)?;
         values.push(ast::Duration { magnitude, unit });
     }
     Ok(values)

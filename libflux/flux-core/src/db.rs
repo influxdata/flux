@@ -266,7 +266,7 @@ impl Database {
                         && path
                             .file_stem()
                             .and_then(|f| f.to_str())
-                            .map_or(true, |f| !f.ends_with("_test"))
+                            .is_none_or(|f| !f.ends_with("_test"))
                     {
                         let path = path.to_str().ok_or_else(|| {
                             Error::Message(format!("Invalid UTF-8 in path: {:?}", path))
