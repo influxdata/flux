@@ -15,7 +15,7 @@ require (
 	github.com/apache/arrow-go/v18 v18.4.1
 	github.com/benbjohnson/immutable v0.4.3
 	github.com/bonitoo-io/go-sql-bigquery v0.3.4
-	github.com/c-bata/go-prompt v0.2.2
+	github.com/c-bata/go-prompt v0.2.6
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/dave/jennifer v1.2.0
 	github.com/eclipse/paho.mqtt.golang v1.5.1
@@ -125,14 +125,14 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
-	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
+	github.com/mattn/go-tty v0.0.3 // indirect
 	github.com/miekg/dns v1.1.25 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pkg/term v0.0.0-20180730021639-bffc007b7fd5 // indirect
+	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
