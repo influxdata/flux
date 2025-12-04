@@ -33,7 +33,7 @@ require (
 	github.com/influxdata/pkg-config v0.3.0
 	github.com/influxdata/tdigest v0.0.2-0.20210216194612-fc98d27c9e8b
 	github.com/jackc/pgx/v5 v5.7.6
-	github.com/mattn/go-sqlite3 v1.14.18
+	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/microsoft/go-mssqldb v1.9.4
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_model v0.6.1
