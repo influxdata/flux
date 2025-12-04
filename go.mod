@@ -19,7 +19,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/dave/jennifer v1.7.1
 	github.com/eclipse/paho.mqtt.golang v1.5.1
-	github.com/fatih/color v1.15.0
+	github.com/fatih/color v1.18.0
 	github.com/foxcpp/go-mockdns v0.0.0-20201212160233-ede2f9158d15
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gofrs/uuid v3.3.0+incompatible
