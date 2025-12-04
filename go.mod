@@ -21,8 +21,8 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.5.1
 	github.com/fatih/color v1.18.0
 	github.com/foxcpp/go-mockdns v1.1.0
-	github.com/go-sql-driver/mysql v1.5.0
-	github.com/gofrs/uuid v3.3.0+incompatible
+	github.com/go-sql-driver/mysql v1.9.3
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/google/flatbuffers v25.9.23+incompatible
 	github.com/google/go-cmp v0.7.0
@@ -64,6 +64,7 @@ require (
 	cloud.google.com/go/iam v1.5.2 // indirect
 	cloud.google.com/go/longrunning v0.6.7 // indirect
 	cloud.google.com/go/monitoring v1.24.2 // indirect
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.2 // indirect
