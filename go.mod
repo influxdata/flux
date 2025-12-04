@@ -36,7 +36,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/microsoft/go-mssqldb v1.9.4
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/prometheus/client_model v0.6.1
+	github.com/prometheus/client_model v0.6.2
 	github.com/prometheus/common v0.53.0
 	github.com/segmentio/kafka-go v0.1.0
 	github.com/spf13/cobra v0.0.3
