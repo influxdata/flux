@@ -14,7 +14,7 @@ require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow-go/v18 v18.4.1
 	github.com/benbjohnson/immutable v0.4.3
-	github.com/bonitoo-io/go-sql-bigquery v0.3.4-1.4.0
+	github.com/bonitoo-io/go-sql-bigquery v0.3.4
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/dave/jennifer v1.2.0
