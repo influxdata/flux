@@ -23,7 +23,7 @@ require (
 	github.com/foxcpp/go-mockdns v1.1.0
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
+	github.com/golang/geo v0.0.0-20251125140653-09e2dd3603dd
 	github.com/google/flatbuffers v25.9.23+incompatible
 	github.com/google/go-cmp v0.7.0
 	github.com/influxdata/gosnowflake v1.9.0
