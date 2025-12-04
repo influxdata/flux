@@ -28,7 +28,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/influxdata/gosnowflake v1.9.0
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
-	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839
+	github.com/influxdata/line-protocol v0.0.0-20210922203350-b1ad95c89adf
 	github.com/influxdata/line-protocol/v2 v2.2.1
 	github.com/influxdata/pkg-config v0.3.0
 	github.com/influxdata/tdigest v0.0.2-0.20210216194612-fc98d27c9e8b
