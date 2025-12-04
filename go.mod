@@ -42,7 +42,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/uber/athenadriver v1.1.15
-	github.com/uber/jaeger-client-go v2.28.0+incompatible
+	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/vertica/vertica-sql-go v1.1.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
