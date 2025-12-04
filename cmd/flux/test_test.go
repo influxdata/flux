@@ -162,7 +162,8 @@ func runForPath(t *testing.T, path string, wantErr error, args ...string) Summar
 	t.Helper()
 	tcmd := cmd.TestCommand(NewTestExecutor)
 	b := bytes.NewBuffer(nil)
-	tcmd.SetOutput(b)
+	tcmd.SetOut(b)
+	tcmd.SetErr(b)
 	tcmd.SetArgs(append([]string{"--noinit", "-p", path}, args...))
 	if err := tcmd.Execute(); err != nil {
 		if wantErr != nil {
