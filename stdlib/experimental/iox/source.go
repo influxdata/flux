@@ -146,7 +146,7 @@ func (s *sqlSource) run(ctx context.Context) error {
 
 	hasMore, err := nextRecordBatch(rr)
 	for hasMore && err == nil {
-		if err := s.produce(key, cols, rr.RecordBatch()); err != nil {
+		if err := s.produce(key, cols, rr.Record()); err != nil {
 			ext.LogError(span, err)
 			return err
 		}
@@ -169,7 +169,7 @@ func nextRecordBatch(rr iox.RecordReader) (bool, error) {
 	return false, rr.Err()
 }
 
-func (s *sqlSource) produce(key flux.GroupKey, cols []flux.ColMeta, record stdarrow.RecordBatch) error {
+func (s *sqlSource) produce(key flux.GroupKey, cols []flux.ColMeta, record stdarrow.Record) error {
 	buffer := arrow.TableBuffer{
 		GroupKey: key,
 		Columns:  cols,

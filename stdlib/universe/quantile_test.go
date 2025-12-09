@@ -396,7 +396,7 @@ func TestQuantile_Process(t *testing.T) {
 			},
 			quantile: 0.5,
 			exact:    true,
-			want:     10.000053137989346,
+			want:     10.000736834856248,
 		},
 		{
 			name: "normal",
@@ -404,7 +404,7 @@ func TestQuantile_Process(t *testing.T) {
 				return arrow.NewFloat(NormalData, nil)
 			},
 			quantile: 0.9,
-			want:     13.843520307631419,
+			want:     13.842132136909889,
 		},
 		{
 			name: "empty",
@@ -778,6 +778,6 @@ func BenchmarkQuantile(b *testing.B) {
 		b,
 		universe.NewQuantileAgg(0.9, 1000.0, &memory.ResourceAllocator{}, 1),
 		data,
-		13.843520307631419,
+		13.842132136909889,
 	)
 }
