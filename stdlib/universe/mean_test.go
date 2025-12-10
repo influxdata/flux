@@ -85,6 +85,6 @@ func BenchmarkMean(b *testing.B) {
 		b,
 		new(universe.MeanAgg),
 		data,
-		10.002798665781535,
+		9.99847267384332,
 	)
 }

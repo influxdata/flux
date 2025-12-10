@@ -95,8 +95,7 @@ error running the tests or at least one test failed.
 	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, -vv, or -vvv)")
 	testCommand.Flags().BoolVarP(&flags.noinit, "noinit", "", false, "Disables Flux initialization, used for testing this command.")
 
-	testCommand.SetOut(color.Output)
-	testCommand.SetErr(color.Output)
+	testCommand.SetOutput(color.Output)
 
 	return testCommand
 }

@@ -27,7 +27,6 @@ import (
 	// Prometheus packages
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
-	"github.com/prometheus/common/model"
 )
 
 const ScrapePrometheusKind = "scrapePrometheus"
@@ -172,7 +171,7 @@ func (p *PrometheusIterator) Connect(ctx context.Context) error {
 // Metrics and calls either makeQuantiles, makeBuckets or getNameandValue depending on each Metric
 // type. It produces a list of type Metric and stores them in p.metrics.
 func (p *PrometheusIterator) parse(reader io.Reader, header http.Header) (err error) {
-	parser := expfmt.NewTextParser(model.LegacyValidation)
+	var parser expfmt.TextParser
 
 	mediatype, params, err := mime.ParseMediaType(header.Get("Content-Type"))
 	if err != nil {

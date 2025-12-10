@@ -1,7 +1,6 @@
 package universe_test
 
 import (
-	"math/rand/v2"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -9,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/values"
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -30,7 +30,7 @@ func init() {
 	dist := distuv.Normal{
 		Mu:    Mu,
 		Sigma: Sigma,
-		Src:   rand.New(rand.NewPCG(seed, seed)),
+		Src:   rand.New(rand.NewSource(seed)),
 	}
 	NormalData = make([]float64, N)
 	for i := range NormalData {
