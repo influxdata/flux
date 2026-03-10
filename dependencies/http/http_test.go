@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -97,6 +98,40 @@ func TestIpValidation(t *testing.T) {
 		} else {
 			if !strings.HasSuffix(err.Error(), "no such host") {
 				t.Fatalf("expected private IP validation error, but got %v", err)
+			}
+		}
+	}
+
+	for _, v := range bad {
+		for _, ip := range v.A {
+			ip := net.ParseIP(ip).To4()
+			host := fmt.Sprintf("[::ffff:%02x%02x:%02x%02x%%25eth0]", ip[0], ip[1], ip[2], ip[3])
+			req, err := http.NewRequest("POST", ("http://" + host + "/path"), bytes.NewReader([]byte{}))
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = client.Do(req)
+			if err == nil {
+				t.Fatal("expected private IP validation error, but client.Do succeeded")
+			} else {
+				if !strings.HasSuffix(err.Error(), "no such host") {
+					t.Fatalf("expected private IP validation error, but got %v", err)
+				}
+			}
+		}
+		for _, ip := range v.AAAA {
+			host := "[" + ip + "%25eth0]"
+			req, err := http.NewRequest("POST", ("http://" + host + "/path"), bytes.NewReader([]byte{}))
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = client.Do(req)
+			if err == nil {
+				t.Fatal("expected private IP validation error, but client.Do succeeded")
+			} else {
+				if !strings.HasSuffix(err.Error(), "no such host") {
+					t.Fatalf("expected private IP validation error, but got %v", err)
+				}
 			}
 		}
 	}
