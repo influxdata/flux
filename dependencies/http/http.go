@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strings"
 	"syscall"
 	"time"
 
@@ -70,8 +71,12 @@ func NewDefaultClient(urlValidator url.Validator) *http.Client {
 		if err != nil {
 			return err
 		}
-
+		// Remove any zone from the host.
+		host, _, _ = strings.Cut(host, "%")
 		ip := net.ParseIP(host)
+		if ip == nil {
+			return errors.New(codes.Invalid, "no such host")
+		}
 		return urlValidator.ValidateIP(ip)
 	}
 
