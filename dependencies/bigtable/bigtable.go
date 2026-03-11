@@ -27,7 +27,7 @@ type Dependency struct {
 	Provider Provider
 }
 
-// Inject will inject the Dialer into the dependency chain.
+// Inject will inject the Provider into the dependency chain.
 func (d Dependency) Inject(ctx context.Context) context.Context {
 	return Inject(ctx, d.Provider)
 }
