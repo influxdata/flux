@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	flux "github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	fhttp "github.com/influxdata/flux/dependencies/http"
+	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/dependency"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
@@ -230,7 +233,9 @@ func testSourceDecoder(p *PrometheusIterator, t *testing.T) *executetest.Result 
 	results := &executetest.Result{}
 	runOnce := true
 
-	ctx, deps := dependency.Inject(context.Background(), dependenciestest.Default())
+	dependencies := dependenciestest.Default()
+	dependencies.Deps.Deps.HTTPClient = fhttp.NewDefaultClient(url.PassValidator{})
+	ctx, deps := dependency.Inject(context.Background(), dependencies)
 	defer deps.Finish()
 
 	err := p.Connect(ctx)
@@ -270,4 +275,29 @@ func testSourceDecoder(p *PrometheusIterator, t *testing.T) *executetest.Result 
 		}
 	}
 	return results
+}
+
+func TestValidation(t *testing.T) {
+	dependencies := dependenciestest.Default()
+	dependencies.Deps.Deps.HTTPClient = fhttp.NewDefaultClient(url.PrivateIPValidator{})
+	ctx, deps := dependency.Inject(context.Background(), dependencies)
+	defer deps.Finish()
+
+	spec := &ScrapePrometheusProcedureSpec{URL: "http://[::1]"}
+	admin := &mock.Administration{}
+	c := execute.NewTableBuilderCache(admin.Allocator())
+	timestamp := time.Now()
+	p := &PrometheusIterator{
+		NowFn:          func() time.Time { return timestamp },
+		spec:           spec,
+		administration: admin,
+		cache:          c,
+	}
+	err := p.Connect(ctx)
+	if err == nil {
+		t.Fatal("expected connection error")
+	}
+	if !strings.HasSuffix(err.Error(), "no such host") {
+		t.Fatalf("unexpected error: %s", err)
+	}
 }

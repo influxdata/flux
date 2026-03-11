@@ -10,7 +10,6 @@ import (
 	"math"
 	"mime"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/influxdata/flux/runtime"
@@ -135,23 +134,20 @@ func (p *PrometheusIterator) Connect(ctx context.Context) error {
 		p.now = time.Now()
 	}
 
-	u, err := url.Parse(p.url)
+	// Get URL validating HTTP client.
+	client, err := flux.GetDependencies(ctx).HTTPClient()
 	if err != nil {
 		return err
 	}
 
-	// Validate url
-	deps := flux.GetDependencies(ctx)
-	validator, err := deps.URLValidator()
+	// Create request
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.url, nil)
 	if err != nil {
-		return err
-	}
-	if err := validator.Validate(u); err != nil {
 		return err
 	}
 
 	// Get response
-	resp, err := http.Get(p.url)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
