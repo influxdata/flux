@@ -43,7 +43,7 @@ func (d Dependency) Inject(ctx context.Context) context.Context {
 
 // GetDialer will return the Dialer for the current context.
 // If no Dialer has been injected into the dependencies,
-// this will return a default provider.
+// this will return a default dialer.
 func GetDialer(ctx context.Context) Dialer {
 	d := ctx.Value(clientKey)
 	if d == nil {
@@ -81,7 +81,12 @@ func (d DefaultDialer) Dial(ctx context.Context, brokers []string, options Optio
 	if len(brokers) == 0 {
 		return nil, errors.New(codes.Invalid, "at least one broker is required for mqtt")
 	}
+	netDialer, err := flux.GetDialer(ctx)
+	if err != nil {
+		return nil, err
+	}
 	opts := mqtt.NewClientOptions()
+	opts.SetDialer(netDialer)
 	for _, broker := range brokers {
 		opts.AddBroker(broker)
 	}
