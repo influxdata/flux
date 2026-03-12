@@ -38,7 +38,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_model v0.6.1
 	github.com/prometheus/common v0.53.0
-	github.com/segmentio/kafka-go v0.1.0
+	github.com/segmentio/kafka-go v0.4.50
 	github.com/spf13/cobra v0.0.3
 	github.com/stretchr/testify v1.11.1
 	github.com/uber/athenadriver v1.1.15
@@ -125,7 +125,6 @@ require (
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
 	github.com/miekg/dns v1.1.25 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
-	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
