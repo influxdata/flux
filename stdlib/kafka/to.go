@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/binary"
 	"io"
+	"net"
 	"net/url"
 	"sort"
 	"time"
@@ -200,7 +201,7 @@ func (o *ToKafkaProcedureSpec) Copy() plan.ProcedureSpec {
 }
 func newToKafkaProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ToKafkaOpSpec)
-	if !ok && spec != nil {
+	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &ToKafkaProcedureSpec{Spec: spec}, nil
@@ -213,21 +214,32 @@ func createToKafkaTransformation(id execute.DatasetID, mode execute.Accumulation
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 	deps := flux.GetDependencies(a.Context())
-	t, err := NewToKafkaTransformation(d, deps, cache, s)
+	dialer, err := flux.GetDialer(a.Context())
+	if err != nil {
+		return nil, nil, err
+	}
+	t, err := NewToKafkaTransformation(d, deps, dialer.DialContext, cache, s)
 	return t, d, err
 }
 
 type ToKafkaTransformation struct {
 	execute.ExecutionNode
-	d     execute.Dataset
-	cache execute.TableBuilderCache
-	spec  *ToKafkaProcedureSpec
+	d      execute.Dataset
+	cache  execute.TableBuilderCache
+	dialer *kafka.Dialer
+	spec   *ToKafkaProcedureSpec
 }
 
 func (t *ToKafkaTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
-func NewToKafkaTransformation(d execute.Dataset, deps flux.Dependencies, cache execute.TableBuilderCache, spec *ToKafkaProcedureSpec) (*ToKafkaTransformation, error) {
+func NewToKafkaTransformation(
+	d execute.Dataset,
+	deps flux.Dependencies,
+	dialFunc func(context.Context, string, string) (net.Conn, error),
+	cache execute.TableBuilderCache,
+	spec *ToKafkaProcedureSpec,
+) (*ToKafkaTransformation, error) {
 	validator, err := deps.URLValidator()
 	if err != nil {
 		return nil, err
@@ -241,10 +253,18 @@ func NewToKafkaTransformation(d execute.Dataset, deps flux.Dependencies, cache e
 			return nil, errors.Newf(codes.Invalid, "kafka broker url did not pass validation: %v", err)
 		}
 	}
+	var dialer *kafka.Dialer
+	if dialFunc != nil {
+		dialer = &kafka.Dialer{
+			DialFunc: dialFunc,
+		}
+	}
+
 	return &ToKafkaTransformation{
-		d:     d,
-		cache: cache,
-		spec:  spec,
+		d:      d,
+		cache:  cache,
+		dialer: dialer,
+		spec:   spec,
 	}, nil
 }
 
@@ -284,6 +304,7 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 		Balancer:      t.spec.balancer,
 		BatchSize:     t.spec.Spec.MsgBufSize,
 		QueueCapacity: t.spec.Spec.MsgBufSize,
+		Dialer:        t.dialer,
 	})
 
 	defer func() {

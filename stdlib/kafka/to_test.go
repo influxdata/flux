@@ -2,6 +2,8 @@ package kafka_test
 
 import (
 	"context"
+	"errors"
+	"net"
 	"sync"
 	"testing"
 
@@ -532,7 +534,7 @@ func TestToKafka_Process(t *testing.T) {
 				tc.want.Table,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					t, _ := fkafka.NewToKafkaTransformation(d, dependenciestest.Default(), c, tc.spec)
+					t, _ := fkafka.NewToKafkaTransformation(d, dependenciestest.Default(), nil, c, tc.spec)
 					return t
 				},
 			)
@@ -549,7 +551,7 @@ func TestToKafka_NewTransformation(t *testing.T) {
 	test := executetest.TfUrlValidationTest{
 		CreateFn: func(d execute.Dataset, deps flux.Dependencies, cache execute.TableBuilderCache,
 			spec plan.ProcedureSpec) (execute.Transformation, error) {
-			return fkafka.NewToKafkaTransformation(d, deps, cache, spec.(*fkafka.ToKafkaProcedureSpec))
+			return fkafka.NewToKafkaTransformation(d, deps, nil, cache, spec.(*fkafka.ToKafkaProcedureSpec))
 		},
 		Cases: []executetest.TfUrlValidationTestCase{
 			{
@@ -593,4 +595,87 @@ func TestToKafka_NewTransformation(t *testing.T) {
 		},
 	}
 	test.Run(t)
+}
+
+func TestToKafka_NewTransformationDialFunc(t *testing.T) {
+	expectErr := errors.New("dial error")
+	dialf := func(ctx context.Context, network, address string) (net.Conn, error) {
+		return nil, expectErr
+	}
+
+	data := &kafkaMock{}
+	fkafka.DefaultKafkaWriterFactory = func(cfg kafka.WriterConfig) fkafka.KafkaWriter {
+		if cfg.Dialer == nil || cfg.Dialer.DialFunc == nil {
+			t.Fatalf("expected dialer with dial func to be set in kafka writer config")
+		}
+		_, err := cfg.Dialer.DialFunc(context.Background(), "tcp", "brokerurl:8989")
+		if !errors.Is(err, expectErr) {
+			t.Fatalf("unexpected error from dial func in kafka writer config: %v", err)
+		}
+		return data
+	}
+
+	spec := &fkafka.ToKafkaProcedureSpec{
+		Spec: &fkafka.ToKafkaOpSpec{
+			Brokers:      []string{"brokerurl:8989"},
+			Topic:        "totallynotfaketopic",
+			TimeColumn:   execute.DefaultTimeColLabel,
+			ValueColumns: []string{"_value"},
+			NameColumn:   "_measurement",
+		},
+	}
+
+	executetest.ProcessTestHelper(
+		t,
+		[]flux.Table{&executetest.Table{
+			ColMeta: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+				{Label: "fred", Type: flux.TString},
+			},
+			Data: [][]interface{}{
+				{execute.Time(11), "a", 2.0, "one"},
+				{execute.Time(21), "a", 2.0, "one"},
+				{execute.Time(21), "b", 1.0, "seven"},
+				{execute.Time(31), "a", 3.0, "nine"},
+				{execute.Time(41), "c", 4.0, "elevendyone"},
+			},
+		}},
+		[]*executetest.Table{{
+			ColMeta: []flux.ColMeta{
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+				{Label: "fred", Type: flux.TString},
+			},
+			Data: [][]interface{}{
+				{execute.Time(11), "a", 2.0, "one"},
+				{execute.Time(21), "a", 2.0, "one"},
+				{execute.Time(21), "b", 1.0, "seven"},
+				{execute.Time(31), "a", 3.0, "nine"},
+				{execute.Time(41), "c", 4.0, "elevendyone"},
+			},
+		}},
+		nil,
+		func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+			tf, err := fkafka.NewToKafkaTransformation(d, dependenciestest.Default(), dialf, c, spec)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return tf
+		},
+	)
+
+	wantResult := [][]kafka.Message{{
+		{Value: []byte("a _value=2 11"), Key: []byte{0xf1, 0xb0, 0x29, 0xd7, 0x9d, 0x04, 0x31, 0x7c}},
+		{Value: []byte("a _value=2 21"), Key: []byte{0xb5, 0xc2, 0xe4, 0x78, 0x95, 0xe0, 0x62, 0x66}},
+		{Value: []byte("b _value=1 21"), Key: []byte{0x0e, 0x62, 0x4e, 0xe7, 0x36, 0xac, 0x77, 0xf3}},
+		{Value: []byte("a _value=3 31"), Key: []byte{0xf5, 0xd5, 0x22, 0x4d, 0x27, 0x9d, 0x8d, 0xb5}},
+		{Value: []byte("c _value=4 41"), Key: []byte{0x05, 0x5b, 0xc5, 0x41, 0x67, 0x78, 0x04, 0xda}},
+	}}
+
+	if !cmp.Equal(wantResult, data.data, cmpopts.EquateNaNs()) {
+		t.Fatalf("unexpected kafka messages: %s", cmp.Diff(wantResult, data.data))
+	}
 }
