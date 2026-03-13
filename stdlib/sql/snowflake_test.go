@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/gosnowflake"
+	"github.com/influxdata/gosnowflake/v2"
 )
 
 func TestSnowflake_FileTransfer(t *testing.T) {

@@ -14,7 +14,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
-	"github.com/influxdata/gosnowflake"
+	"github.com/influxdata/gosnowflake/v2"
 )
 
 // Snowflake DB support.

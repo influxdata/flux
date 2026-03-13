@@ -396,7 +396,7 @@ func TestQuantile_Process(t *testing.T) {
 			},
 			quantile: 0.5,
 			exact:    true,
-			want:     10.000736834856248,
+			want:     9.99885441526913,
 		},
 		{
 			name: "normal",
@@ -404,7 +404,7 @@ func TestQuantile_Process(t *testing.T) {
 				return arrow.NewFloat(NormalData, nil)
 			},
 			quantile: 0.9,
-			want:     13.842132136909889,
+			want:     13.8421299927645,
 		},
 		{
 			name: "empty",
