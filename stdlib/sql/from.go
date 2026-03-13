@@ -152,7 +152,7 @@ type sqlIterator struct {
 }
 
 func (c *sqlIterator) connect(ctx context.Context) (*sql.DB, error) {
-	db, err := getOpenFunc(c.spec.DriverName, c.spec.DataSourceName)()
+	db, err := getOpenFunc(c.spec.DriverName, c.spec.DataSourceName)(flux.GetDependencies(ctx))
 	if err != nil {
 		return nil, err
 	}

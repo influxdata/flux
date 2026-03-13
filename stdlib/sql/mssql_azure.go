@@ -12,6 +12,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	mssql "github.com/microsoft/go-mssqldb"
@@ -106,7 +107,7 @@ func mssqlSetAzureConfig(params neturl.Values, cfg *mssqlConfig) {
 func mssqlOpenFunction(driverName, dataSourceName string) openFunc {
 	cfg, err := mssqlParseDSN(dataSourceName)
 	if err != nil {
-		return func() (*sql.DB, error) {
+		return func(flux.Dependencies) (*sql.DB, error) {
 			return nil, err
 		}
 	}
@@ -114,7 +115,7 @@ func mssqlOpenFunction(driverName, dataSourceName string) openFunc {
 		return defaultOpenFunction(driverName, dataSourceName)
 	}
 
-	return func() (*sql.DB, error) {
+	return func(flux.Dependencies) (*sql.DB, error) {
 		credential, err := mssqlAzureAuthToken(cfg.AzureAuth, cfg.AzureConfig)
 		if err != nil {
 			return nil, err

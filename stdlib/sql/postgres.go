@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -163,4 +164,19 @@ func PostgresColumnTranslateFunc() translationFunc {
 
 func postgresQuoteIdent(name string) string {
 	return pgx.Identifier{name}.Sanitize()
+}
+
+func postgresOpenFunction(dataSourceName string) openFunc {
+	return func(deps flux.Dependencies) (*sql.DB, error) {
+		config, err := pgx.ParseConfig(dataSourceName)
+		if err != nil {
+			return nil, err
+		}
+		dialer, err := deps.Dialer()
+		if err != nil {
+			return nil, err
+		}
+		config.DialFunc = dialer.DialContext
+		return stdlib.OpenDB(*config), nil
+	}
 }

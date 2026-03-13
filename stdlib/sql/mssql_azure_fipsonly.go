@@ -2,8 +2,12 @@
 
 package sql
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/influxdata/flux"
+)
 
 func mssqlOpenFunction(driverName, dataSourceName string) openFunc {
-	return func() (*sql.DB, error) { return nil, errMssqlDisabled }
+	return func(flux.Dependencies) (*sql.DB, error) { return nil, errMssqlDisabled }
 }

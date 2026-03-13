@@ -1,8 +1,12 @@
 package sql
 
 import (
+	"context"
+	"errors"
+	"net"
 	"testing"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/execute/executetest"
 )
@@ -178,6 +182,47 @@ func TestFromSqlUrlValidation(t *testing.T) {
 		}
 	}
 	testCases.Run(t, createFromSQLSource)
+}
+
+type mockDialer struct {
+	err error
+}
+
+func (d *mockDialer) DialContext(_ context.Context, _, _ string) (net.Conn, error) {
+	return nil, d.err
+}
+
+type mockDeps struct {
+	flux.Deps
+	dialer flux.Dialer
+}
+
+func (d mockDeps) Dialer() (flux.Dialer, error) {
+	return d.dialer, nil
+}
+
+func TestPostgresOpenFunctionDialer(t *testing.T) {
+	expectErr := errors.New("test dial error")
+	deps := mockDeps{
+		Deps:   flux.NewDefaultDependencies(),
+		dialer: &mockDialer{err: expectErr},
+	}
+
+	openFn := postgresOpenFunction("postgres://user:pass@localhost:5432/testdb")
+	db, err := openFn(deps)
+	if err != nil {
+		t.Fatalf("unexpected error from open function: %v", err)
+	}
+	defer db.Close()
+
+	// Ping triggers a real connection attempt, which will use our mock dialer.
+	err = db.Ping()
+	if err == nil {
+		t.Fatal("expected error from Ping, got nil")
+	}
+	if !errors.Is(err, expectErr) {
+		t.Fatalf("expected error %q, got: %v", expectErr, err)
+	}
 }
 
 func TestFromSqliteUrlValidation(t *testing.T) {

@@ -2,6 +2,8 @@ package sql
 
 import (
 	"database/sql"
+
+	"github.com/influxdata/flux"
 )
 
 // There are cases when database connection cannot be open with `sql.Open(driverName, dsn)`.
@@ -21,11 +23,11 @@ import (
 // When user requests Azure AD authentication in SQL server connection string,
 // `getOpenFunc` returns a function with body like the above example.
 
-type openFunc func() (*sql.DB, error)
+type openFunc func(flux.Dependencies) (*sql.DB, error)
 
 // Returns function that calls `sql.Open(driverName, dataSourceName)`
 func defaultOpenFunction(driverName, dataSourceName string) openFunc {
-	return func() (*sql.DB, error) {
+	return func(flux.Dependencies) (*sql.DB, error) {
 		return sql.Open(driverName, dataSourceName)
 	}
 }
@@ -39,7 +41,7 @@ func getOpenFunc(driverName, dataSourceName string) openFunc {
 	case "mssql", "sqlserver":
 		return mssqlOpenFunction(driverName, dataSourceName)
 	case "postgres":
-		return defaultOpenFunction("pgx", dataSourceName)
+		return postgresOpenFunction(dataSourceName)
 	default:
 		return defaultOpenFunction(driverName, dataSourceName)
 	}
