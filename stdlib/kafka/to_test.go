@@ -534,7 +534,7 @@ func TestToKafka_Process(t *testing.T) {
 				tc.want.Table,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					t, _ := fkafka.NewToKafkaTransformation(d, dependenciestest.Default(), nil, c, tc.spec)
+					t, _ := fkafka.NewToKafkaTransformation(d, dependenciestest.Default(), c, tc.spec)
 					return t
 				},
 			)
@@ -551,7 +551,7 @@ func TestToKafka_NewTransformation(t *testing.T) {
 	test := executetest.TfUrlValidationTest{
 		CreateFn: func(d execute.Dataset, deps flux.Dependencies, cache execute.TableBuilderCache,
 			spec plan.ProcedureSpec) (execute.Transformation, error) {
-			return fkafka.NewToKafkaTransformation(d, deps, nil, cache, spec.(*fkafka.ToKafkaProcedureSpec))
+			return fkafka.NewToKafkaTransformation(d, deps, cache, spec.(*fkafka.ToKafkaProcedureSpec))
 		},
 		Cases: []executetest.TfUrlValidationTestCase{
 			{
@@ -597,10 +597,28 @@ func TestToKafka_NewTransformation(t *testing.T) {
 	test.Run(t)
 }
 
+type mockDialer struct {
+	err error
+}
+
+func (d *mockDialer) DialContext(_ context.Context, _, _ string) (net.Conn, error) {
+	return nil, d.err
+}
+
+type mockDeps struct {
+	dependenciestest.Deps
+	dialer flux.Dialer
+}
+
+func (d mockDeps) Dialer() (flux.Dialer, error) {
+	return d.dialer, nil
+}
+
 func TestToKafka_NewTransformationDialFunc(t *testing.T) {
 	expectErr := errors.New("dial error")
-	dialf := func(ctx context.Context, network, address string) (net.Conn, error) {
-		return nil, expectErr
+	deps := mockDeps{
+		Deps:   dependenciestest.Default(),
+		dialer: &mockDialer{err: expectErr},
 	}
 
 	data := &kafkaMock{}
@@ -659,7 +677,7 @@ func TestToKafka_NewTransformationDialFunc(t *testing.T) {
 		}},
 		nil,
 		func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-			tf, err := fkafka.NewToKafkaTransformation(d, dependenciestest.Default(), dialf, c, spec)
+			tf, err := fkafka.NewToKafkaTransformation(d, deps, c, spec)
 			if err != nil {
 				t.Fatal(err)
 			}
