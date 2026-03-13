@@ -1,13 +1,16 @@
 package sql
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"math/big"
+	"net"
 	"strings"
 	"time"
 
 	hdb "github.com/SAP/go-hdb/driver"
+	"github.com/SAP/go-hdb/driver/dial"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -264,4 +267,44 @@ func hdbEscapeName(name string, toUpper bool) string {
 		parts[i] = doubleQuote(strings.Trim(parts[i], "\""))
 	}
 	return strings.Join(parts, ".")
+}
+
+type hdbDialer struct {
+	dialer flux.Dialer
+}
+
+func (d hdbDialer) DialContext(ctx context.Context, address string, opts dial.DialerOptions) (net.Conn, error) {
+	dialer := d.dialer
+	if netDialer, ok := d.dialer.(*net.Dialer); ok {
+		nd := *netDialer
+		if opts.Timeout != time.Duration(0) {
+			nd.Timeout = opts.Timeout
+		}
+		if opts.TCPKeepAlive != time.Duration(0) {
+			nd.KeepAlive = opts.TCPKeepAlive
+		}
+		if opts.TCPKeepAliveConfig != (net.KeepAliveConfig{}) {
+			nd.KeepAliveConfig = opts.TCPKeepAliveConfig
+		}
+		dialer = &nd
+	}
+	if conn, err := dialer.DialContext(ctx, "tcp4", address); err == nil {
+		return conn, nil
+	}
+	return dialer.DialContext(ctx, "tcp", address)
+}
+
+func hdbOpenFunction(dataSourceName string) openFunc {
+	return func(deps flux.Dependencies) (*sql.DB, error) {
+		connector, err := hdb.NewDSNConnector(dataSourceName)
+		if err != nil {
+			return nil, err
+		}
+		dialer, err := deps.Dialer()
+		if err != nil {
+			return nil, err
+		}
+		connector.SetDialer(hdbDialer{dialer})
+		return sql.OpenDB(connector), nil
+	}
 }

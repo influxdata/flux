@@ -38,6 +38,8 @@ func defaultOpenFunction(driverName, dataSourceName string) openFunc {
 // against Azure AD and uses connector with access token to open DB connection.
 func getOpenFunc(driverName, dataSourceName string) openFunc {
 	switch driverName {
+	case "hdb":
+		return hdbOpenFunction(dataSourceName)
 	case "mssql", "sqlserver":
 		return mssqlOpenFunction(dataSourceName)
 	case "mysql":
