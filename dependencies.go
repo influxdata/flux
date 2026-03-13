@@ -29,6 +29,13 @@ type Dependencies interface {
 	FilesystemService() (filesystem.Service, error)
 	SecretService() (secret.Service, error)
 	URLValidator() (url.Validator, error)
+	Dialer() (Dialer, error)
+}
+
+// An abstraction of net.Dialer. This interface, or just the DialContext
+// function is used by a lot of interfaces to specify a custom dialer.
+type Dialer interface {
+	DialContext(ctx context.Context, network, address string) (net.Conn, error)
 }
 
 // Deps implements Dependencies.
@@ -78,6 +85,14 @@ func (d Deps) URLValidator() (url.Validator, error) {
 		return d.Deps.URLValidator, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "url validator uninitialized in dependencies")
+}
+
+func (d Deps) Dialer() (Dialer, error) {
+	url, err := d.URLValidator()
+	if err != nil {
+		return nil, err
+	}
+	return dialer.New(url), nil
 }
 
 func (d Deps) Inject(ctx context.Context) context.Context {

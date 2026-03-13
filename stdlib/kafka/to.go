@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/binary"
 	"io"
-	"net"
 	"net/url"
 	"sort"
 	"time"
@@ -214,11 +213,7 @@ func createToKafkaTransformation(id execute.DatasetID, mode execute.Accumulation
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 	deps := flux.GetDependencies(a.Context())
-	dialer, err := flux.GetDialer(a.Context())
-	if err != nil {
-		return nil, nil, err
-	}
-	t, err := NewToKafkaTransformation(d, deps, dialer.DialContext, cache, s)
+	t, err := NewToKafkaTransformation(d, deps, cache, s)
 	return t, d, err
 }
 
@@ -236,7 +231,6 @@ func (t *ToKafkaTransformation) RetractTable(id execute.DatasetID, key flux.Grou
 func NewToKafkaTransformation(
 	d execute.Dataset,
 	deps flux.Dependencies,
-	dialFunc func(context.Context, string, string) (net.Conn, error),
 	cache execute.TableBuilderCache,
 	spec *ToKafkaProcedureSpec,
 ) (*ToKafkaTransformation, error) {
@@ -253,17 +247,18 @@ func NewToKafkaTransformation(
 			return nil, errors.Newf(codes.Invalid, "kafka broker url did not pass validation: %v", err)
 		}
 	}
-	var dialer *kafka.Dialer
-	if dialFunc != nil {
-		dialer = &kafka.Dialer{
-			DialFunc: dialFunc,
-		}
+	dialer, err := deps.Dialer()
+	if err != nil {
+		return nil, err
+	}
+	kafkaDialer := &kafka.Dialer{
+		DialFunc: dialer.DialContext,
 	}
 
 	return &ToKafkaTransformation{
 		d:      d,
 		cache:  cache,
-		dialer: dialer,
+		dialer: kafkaDialer,
 		spec:   spec,
 	}, nil
 }

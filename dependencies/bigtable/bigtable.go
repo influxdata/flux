@@ -54,7 +54,7 @@ type DefaultProvider struct{}
 func (d DefaultProvider) NewClient(ctx context.Context, project, instance string, opts ...option.ClientOption) (*bigtable.Client, error) {
 	opts = append([]option.ClientOption{
 		option.WithGRPCDialOption(grpc.WithContextDialer(func(ctx context.Context, address string) (net.Conn, error) {
-			dialer, err := flux.GetDialer(ctx)
+			dialer, err := flux.GetDependencies(ctx).Dialer()
 			if err != nil {
 				return nil, err
 			}
