@@ -113,7 +113,7 @@ func (o *ToSQLProcedureSpec) Copy() plan.ProcedureSpec {
 
 func newToSQLProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ToSQLOpSpec)
-	if !ok && spec != nil {
+	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &ToSQLProcedureSpec{Spec: spec}, nil
@@ -157,7 +157,7 @@ func NewToSQLTransformation(d execute.Dataset, deps flux.Dependencies, cache exe
 	}
 
 	// validate the data driver name and source name.
-	db, err := getOpenFunc(spec.Spec.DriverName, spec.Spec.DataSourceName)()
+	db, err := getOpenFunc(spec.Spec.DriverName, spec.Spec.DataSourceName)(deps)
 	if err != nil {
 		return nil, err
 	}
