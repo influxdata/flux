@@ -104,37 +104,46 @@ func mssqlSetAzureConfig(params neturl.Values, cfg *mssqlConfig) {
 	}
 }
 
-func mssqlOpenFunction(driverName, dataSourceName string) openFunc {
+func mssqlOpenFunction(dataSourceName string) openFunc {
 	cfg, err := mssqlParseDSN(dataSourceName)
 	if err != nil {
 		return func(flux.Dependencies) (*sql.DB, error) {
 			return nil, err
 		}
 	}
-	if cfg.AzureAuth == "" {
-		return defaultOpenFunction(driverName, dataSourceName)
-	}
 
-	return func(flux.Dependencies) (*sql.DB, error) {
-		credential, err := mssqlAzureAuthToken(cfg.AzureAuth, cfg.AzureConfig)
-		if err != nil {
-			return nil, err
-		}
-		connector, err := mssql.NewAccessTokenConnector(dataSourceName, func() (string, error) {
-			ctx := context.Background()
-			token, err := credential.GetToken(ctx, policy.TokenRequestOptions{
-				Scopes: []string{mssqlAzureSQLScope},
+	return func(deps flux.Dependencies) (*sql.DB, error) {
+		var connector *mssql.Connector
+		var err error
+		if cfg.AzureAuth == "" {
+			connector, err = mssql.NewConnector(dataSourceName)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			credential, err := mssqlAzureAuthToken(cfg.AzureAuth, cfg.AzureConfig)
+			if err != nil {
+				return nil, err
+			}
+			connector, err = mssql.NewConnectorWithAccessTokenProvider(dataSourceName, func(ctx context.Context) (string, error) {
+				token, err := credential.GetToken(ctx, policy.TokenRequestOptions{
+					Scopes: []string{mssqlAzureSQLScope},
+				})
+				if err != nil {
+					return "", err
+				}
+				return token.Token, nil
 			})
 			if err != nil {
-				return "", err
+				return nil, err
 			}
-			return token.Token, nil
-		})
+		}
+		dialer, err := deps.Dialer()
 		if err != nil {
 			return nil, err
 		}
-		db := sql.OpenDB(connector)
-		return db, nil
+		connector.Dialer = dialer
+		return sql.OpenDB(connector), nil
 	}
 }
 
