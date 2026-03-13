@@ -3,13 +3,11 @@ package http
 import (
 	"crypto/tls"
 	"io"
-	"net"
 	"net/http"
-	"strings"
-	"syscall"
 	"time"
 
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/dialer"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
 )
@@ -64,28 +62,7 @@ func (l roundTripLimiter) RoundTrip(r *http.Request) (*http.Response, error) {
 
 // NewDefaultClient creates a client with sane defaults.
 func NewDefaultClient(urlValidator url.Validator) *http.Client {
-	// Control is called after DNS lookup, but before the network connection is
-	// initiated.
-	control := func(network, address string, c syscall.RawConn) error {
-		host, _, err := net.SplitHostPort(address)
-		if err != nil {
-			return err
-		}
-		// Remove any zone from the host.
-		host, _, _ = strings.Cut(host, "%")
-		ip := net.ParseIP(host)
-		if ip == nil {
-			return errors.New(codes.Invalid, "no such host")
-		}
-		return urlValidator.ValidateIP(ip)
-	}
-
-	dialer := &net.Dialer{
-		Timeout:   30 * time.Second,
-		KeepAlive: 30 * time.Second,
-		Control:   control,
-		// DualStack is deprecated
-	}
+	dialer := dialer.New(urlValidator)
 
 	// These defaults are copied from http.DefaultTransport.
 	return &http.Client{

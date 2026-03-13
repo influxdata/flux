@@ -3,10 +3,9 @@ package flux
 import (
 	"context"
 	"net"
-	"syscall"
-	"time"
 
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/dialer"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/http"
 	"github.com/influxdata/flux/dependencies/secret"
@@ -126,22 +125,5 @@ func GetDialer(ctx context.Context) (*net.Dialer, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// Control is called after DNS lookup, but before the
-	// network connection is initiated.
-	control := func(network, address string, c syscall.RawConn) error {
-		host, _, err := net.SplitHostPort(address)
-		if err != nil {
-			return err
-		}
-
-		ip := net.ParseIP(host)
-		return url.ValidateIP(ip)
-	}
-
-	return &net.Dialer{
-		Timeout:   30 * time.Second,
-		KeepAlive: 30 * time.Second,
-		Control:   control,
-	}, nil
+	return dialer.New(url), nil
 }
