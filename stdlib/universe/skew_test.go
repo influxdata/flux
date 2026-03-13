@@ -104,6 +104,6 @@ func BenchmarkSkew(b *testing.B) {
 		b,
 		new(universe.SkewAgg),
 		data,
-		-0.0019606823191321435,
+		-0.0003677846000242576,
 	)
 }

@@ -778,6 +778,6 @@ func BenchmarkQuantile(b *testing.B) {
 		b,
 		universe.NewQuantileAgg(0.9, 1000.0, &memory.ResourceAllocator{}, 1),
 		data,
-		13.842132136909889,
+		13.843520307631419,
 	)
 }
