@@ -44,6 +44,8 @@ func getOpenFunc(driverName, dataSourceName string) openFunc {
 		return mysqlOpenFunction(dataSourceName)
 	case "postgres":
 		return postgresOpenFunction(dataSourceName)
+	case "snowflake":
+		return snowflakeOpenFunction(dataSourceName)
 	default:
 		return defaultOpenFunction(driverName, dataSourceName)
 	}

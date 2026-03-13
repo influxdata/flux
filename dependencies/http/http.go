@@ -1,8 +1,10 @@
 package http
 
 import (
+	"context"
 	"crypto/tls"
 	"io"
+	"net"
 	"net/http"
 	"time"
 
@@ -66,16 +68,7 @@ func NewDefaultClient(urlValidator url.Validator) *http.Client {
 
 	// These defaults are copied from http.DefaultTransport.
 	return &http.Client{
-		Transport: &http.Transport{
-			Proxy:                 http.ProxyFromEnvironment,
-			DialContext:           dialer.DialContext,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       10 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-			// Fields below are NOT part of Go's defaults
-			MaxIdleConnsPerHost: 100,
-		},
+		Transport: NewTransport(dialer.DialContext),
 	}
 }
 
@@ -141,4 +134,18 @@ func (c *privateClient) Do(req *http.Request) (*http.Response, error) {
 		return nil, errors.Wrap(err, codes.Internal, "an internal error has occurred")
 	}
 	return resp, nil
+}
+
+// Create a new transport that uses the provided dialFunc
+func NewTransport(dialFunc func(context.Context, string, string) (net.Conn, error)) *http.Transport {
+	return &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           dialFunc,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       10 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		// Fields below are NOT part of Go's defaults
+		MaxIdleConnsPerHost: 100,
+	}
 }
