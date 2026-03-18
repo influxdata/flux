@@ -8,6 +8,6 @@ import (
 	"github.com/influxdata/flux"
 )
 
-func mssqlOpenFunction(driverName, dataSourceName string) openFunc {
+func mssqlOpenFunction(dataSourceName string) openFunc {
 	return func(flux.Dependencies) (*sql.DB, error) { return nil, errMssqlDisabled }
 }
