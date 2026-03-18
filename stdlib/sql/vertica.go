@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	vertigo "github.com/influxdata/vertica-sql-go"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -162,4 +164,19 @@ func VerticaColumnTranslateFunc() translationFunc {
 		return doubleQuote(colName) + " " + s, nil
 	}
 
+}
+
+func verticaOpenFunction(dataSourceName string) openFunc {
+	return func(deps flux.Dependencies) (*sql.DB, error) {
+		cfg, err := vertigo.ParseDSN(dataSourceName)
+		if err != nil {
+			return nil, err
+		}
+		dialer, err := deps.Dialer()
+		if err != nil {
+			return nil, err
+		}
+		cfg.DialContext = dialer.DialContext
+		return sql.OpenDB(cfg), nil
+	}
 }

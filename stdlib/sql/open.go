@@ -48,6 +48,8 @@ func getOpenFunc(driverName, dataSourceName string) openFunc {
 		return postgresOpenFunction(dataSourceName)
 	case "snowflake":
 		return snowflakeOpenFunction(dataSourceName)
+	case "vertica":
+		return verticaOpenFunction(dataSourceName)
 	default:
 		return defaultOpenFunction(driverName, dataSourceName)
 	}
