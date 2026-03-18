@@ -249,6 +249,30 @@ func TestMssqlOpenFunctionDialer(t *testing.T) {
 	}
 }
 
+func TestMysqlOpenFunctionDialer(t *testing.T) {
+	expectErr := errors.New("test dial error")
+	deps := mockDeps{
+		Deps:   flux.NewDefaultDependencies(),
+		dialer: &mockDialer{err: expectErr},
+	}
+
+	openFn := mysqlOpenFunction("username:password@tcp(localhost:3306)/dbname")
+	db, err := openFn(deps)
+	if err != nil {
+		t.Fatalf("unexpected error from open function: %v", err)
+	}
+	defer db.Close()
+
+	// Ping triggers a real connection attempt, which will use our mock dialer.
+	err = db.Ping()
+	if err == nil {
+		t.Fatal("expected error from Ping, got nil")
+	}
+	if !errors.Is(err, expectErr) {
+		t.Fatalf("expected error %q, got: %v", expectErr, err)
+	}
+}
+
 func TestFromSqliteUrlValidation(t *testing.T) {
 	testCases := executetest.SourceUrlValidationTestCases{
 		{

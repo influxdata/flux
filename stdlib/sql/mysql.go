@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -196,4 +197,23 @@ func MysqlColumnTranslateFunc() translationFunc {
 
 func mysqlQuoteIdent(name string) string {
 	return fmt.Sprintf("`%s`", strings.ReplaceAll(name, "`", "``"))
+}
+
+func mysqlOpenFunction(dataSourceName string) openFunc {
+	return func(deps flux.Dependencies) (*sql.DB, error) {
+		cfg, err := mysql.ParseDSN(dataSourceName)
+		if err != nil {
+			return nil, err
+		}
+		dialer, err := deps.Dialer()
+		if err != nil {
+			return nil, err
+		}
+		cfg.DialFunc = dialer.DialContext
+		connector, err := mysql.NewConnector(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return sql.OpenDB(connector), nil
+	}
 }
