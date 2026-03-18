@@ -39,6 +39,12 @@ func NewSnowflakeRowReader(r *sql.Rows) (execute.RowReader, error) {
 // SnowflakeColumnTranslateFunc will go away once gosnowflake's OCSP implementation is updated.
 func SnowflakeColumnTranslateFunc() translationFunc {
 	return func(f flux.ColType, colname string) (string, error) {
-		return "", errMssqlDisabled
+		return "", errSnowflakeDisabled
+	}
+}
+
+func snowflakeOpenFunction(string) openFunc {
+	return func(flux.Dependencies) (*sql.DB, error) {
+		return nil, errSnowflakeDisabled
 	}
 }

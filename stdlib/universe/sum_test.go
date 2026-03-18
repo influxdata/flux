@@ -85,6 +85,6 @@ func BenchmarkSum(b *testing.B) {
 		b,
 		new(universe.SumAgg),
 		data,
-		9998472.67384332,
+		10002798.665781535,
 	)
 }

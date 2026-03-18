@@ -4,15 +4,17 @@ package sql
 
 import (
 	"database/sql"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	fhttp "github.com/influxdata/flux/dependencies/http"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
-	"github.com/influxdata/gosnowflake"
+	"github.com/influxdata/gosnowflake/v2"
 )
 
 // Snowflake DB support.
@@ -212,5 +214,32 @@ func SnowflakeColumnTranslateFunc() translationFunc {
 			return "", errors.Newf(codes.Internal, "Snowflake does not support column type %s", f.String())
 		}
 		return doubleQuote(colName) + " " + s, nil
+	}
+}
+
+func snowflakeOpenFunction(dataSourceName string) openFunc {
+	return func(deps flux.Dependencies) (*sql.DB, error) {
+		cfg, err := gosnowflake.ParseDSN(dataSourceName)
+		if err != nil {
+			return nil, err
+		}
+		httpClient, err := deps.HTTPClient()
+		if err != nil {
+			return nil, err
+		}
+		if hc, ok := httpClient.(*http.Client); ok {
+			// If we can copy the Transport from the provided HTTP
+			// client.
+			cfg.Transporter = hc.Transport
+		} else {
+			// Otherwise create a new one with the provided Dialer.
+			dialer, err := deps.Dialer()
+			if err != nil {
+				return nil, err
+			}
+			cfg.Transporter = fhttp.NewTransport(dialer.DialContext)
+		}
+		connector := gosnowflake.NewConnector(gosnowflake.SnowflakeDriver{}, *cfg)
+		return sql.OpenDB(connector), nil
 	}
 }
