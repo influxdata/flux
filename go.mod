@@ -40,7 +40,6 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/uber/athenadriver v1.1.15
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
-	github.com/vertica/vertica-sql-go v1.1.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
 	golang.org/x/tools v0.41.0
@@ -53,6 +52,8 @@ require (
 )
 
 require github.com/influxdata/gosnowflake/v2 v2.0.0
+
+require github.com/influxdata/vertica-sql-go v1.3.5
 
 require (
 	cel.dev/expr v0.25.1 // indirect
@@ -98,6 +99,8 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deepmap/oapi-codegen v1.6.0 // indirect
 	github.com/dvsekhvalnov/jose2go v1.7.0 // indirect
+	github.com/elastic/go-sysinfo v1.8.1 // indirect
+	github.com/elastic/go-windows v1.0.0 // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.36.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -122,6 +125,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.2.7 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/joeshaw/multierror v0.0.0-20140124173710-69b34d4ec901 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.11 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
@@ -137,6 +141,7 @@ require (
 	github.com/pkg/term v0.0.0-20180730021639-bffc007b7fd5 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/prometheus/procfs v0.15.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
@@ -170,4 +175,5 @@ require (
 	google.golang.org/genproto v0.0.0-20250303144028-a0af3efb3deb // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
+	howett.net/plist v0.0.0-20181124034731-591f970eefbb // indirect
 )
