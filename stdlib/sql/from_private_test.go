@@ -298,7 +298,7 @@ func TestHdbOpenFunctionDialer(t *testing.T) {
 	}
 }
 
-func TestVerticaOpenFunctionDialer(t *testing.T) {
+func TestVerticaOpenFunctionUsesInjectedDialer(t *testing.T) {
 	expectErr := errors.New("test dial error")
 	deps := mockDeps{
 		Deps:   flux.NewDefaultDependencies(),
