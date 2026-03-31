@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	athenadriver "github.com/influxdata/athenadriver/v2/go"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/values"
-	_ "github.com/uber/athenadriver/go"
 )
 
 // AWS Athena support.
@@ -171,4 +173,22 @@ func NewAwsAthenaRowReader(r *sql.Rows) (execute.RowReader, error) {
 	reader.InitColumnTypes(types)
 
 	return reader, nil
+}
+
+func athenaOpenFunc(dataSourceName string) openFunc {
+	return func(deps flux.Dependencies) (*sql.DB, error) {
+		cfg, err := athenadriver.NewConfig(dataSourceName)
+		if err != nil {
+			return nil, err
+		}
+
+		client, err := deps.HTTPClient()
+		if err != nil {
+			return nil, err
+		}
+
+		conn := athenadriver.NewConnector(cfg)
+		conn.LoadOptions = append(conn.LoadOptions, config.WithHTTPClient(client))
+		return sql.OpenDB(conn), nil
+	}
 }
