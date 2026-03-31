@@ -3,6 +3,8 @@ package sql
 import (
 	"database/sql"
 
+	athenadriver "github.com/influxdata/athenadriver/v2/go"
+
 	"github.com/influxdata/flux"
 )
 
@@ -38,6 +40,8 @@ func defaultOpenFunction(driverName, dataSourceName string) openFunc {
 // against Azure AD and uses connector with access token to open DB connection.
 func getOpenFunc(driverName, dataSourceName string) openFunc {
 	switch driverName {
+	case athenadriver.DriverName:
+		return athenaOpenFunc(dataSourceName)
 	case "hdb":
 		return hdbOpenFunction(dataSourceName)
 	case "mssql", "sqlserver":

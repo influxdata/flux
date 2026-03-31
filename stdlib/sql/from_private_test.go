@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"net"
+	"net/http"
 	"strings"
 	"testing"
 
 	"github.com/influxdata/flux"
+	fhttp "github.com/influxdata/flux/dependencies/http"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/execute/executetest"
 )
@@ -195,11 +197,19 @@ func (d *mockDialer) DialContext(_ context.Context, _, _ string) (net.Conn, erro
 
 type mockDeps struct {
 	flux.Deps
-	dialer flux.Dialer
+	dialer     flux.Dialer
+	httpClient fhttp.Client
 }
 
 func (d mockDeps) Dialer() (flux.Dialer, error) {
 	return d.dialer, nil
+}
+
+func (d mockDeps) HTTPClient() (fhttp.Client, error) {
+	if d.httpClient != nil {
+		return d.httpClient, nil
+	}
+	return d.Deps.HTTPClient()
 }
 
 func TestPostgresOpenFunctionDialer(t *testing.T) {
@@ -322,6 +332,37 @@ func TestVerticaOpenFunctionUsesInjectedDialer(t *testing.T) {
 	// error message is present.
 	if !strings.Contains(err.Error(), expectErr.Error()) {
 		t.Fatalf("expected error containing %q, got: %v", expectErr, err)
+	}
+}
+
+func TestAthenaOpenFunctionDialer(t *testing.T) {
+	var dialerCalled bool
+	dialf := func(_ context.Context, _, _ string) (net.Conn, error) {
+		dialerCalled = true
+		return nil, errors.New("test dial error")
+	}
+
+	deps := mockDeps{
+		Deps: flux.NewDefaultDependencies(),
+		httpClient: &http.Client{
+			Transport: fhttp.NewTransport(dialf),
+		},
+	}
+
+	openFn := athenaOpenFunc("s3://bucket/?accessID=ABCD123&region=us-east-1&secretAccessKey=SECRET&db=test")
+	db, err := openFn(deps)
+	if err != nil {
+		t.Fatalf("unexpected error from open function: %v", err)
+	}
+	defer db.Close()
+
+	// Ping triggers a real connection attempt through the HTTP client,
+	// which uses our custom dialer in its transport. The AWS SDK
+	// wraps transport errors so the original error is not preserved,
+	// but we can verify the dialer was called.
+	_ = db.Ping()
+	if !dialerCalled {
+		t.Fatal("expected injected dialer to be called, but it was not")
 	}
 }
 
