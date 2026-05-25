@@ -5,6 +5,9 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, edited]
 
+permissions:
+  contents: read
+
 jobs:
   semantic:
     uses: influxdata/validate-semantic-github-messages/.github/workflows/semantic.yml@main
