@@ -13,6 +13,9 @@ package bigtable
 //
 // - token: Google Cloud IAM token to use to access the Cloud Bigtable database.
 //
+//   Must be service account credentials in JSON form (a credential configuration
+//   with a `type` of `service_account`). Other credential types are rejected.
+//
 //   For more information, see the following:
 //
 //   - [Cloud Bigtable Access Control](https://cloud.google.com/bigtable/docs/access-control)
