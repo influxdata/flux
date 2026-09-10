@@ -164,7 +164,6 @@ func display(w *bufio.Writer, v Value, indent int) (err error) {
 					}
 				}
 			}
-			i++
 			_, err = w.WriteString(k)
 			if err != nil {
 				return
