@@ -144,7 +144,10 @@ var _ execute.SourceDecoder = (*BigtableDecoder)(nil)
 
 func (c *BigtableDecoder) Connect(ctx context.Context) error {
 	provider := bigtable.GetProvider(ctx)
-	client, err := provider.NewClient(ctx, c.spec.Project, c.spec.Instance, option.WithCredentialsJSON([]byte(c.spec.Token)))
+	// The token comes from the query, so pin the credential type to a service
+	// account. Accepting any type would allow a credential configuration that
+	// directs the client at arbitrary endpoints.
+	client, err := provider.NewClient(ctx, c.spec.Project, c.spec.Instance, option.WithAuthCredentialsJSON(option.ServiceAccount, []byte(c.spec.Token)))
 	if err != nil {
 		return err
 	}
