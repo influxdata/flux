@@ -30,7 +30,7 @@ require (
 	github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839
 	github.com/influxdata/line-protocol/v2 v2.2.1
-	github.com/influxdata/pkg-config v0.3.0
+	github.com/influxdata/pkg-config v0.3.1
 	github.com/influxdata/tdigest v0.0.2-0.20210216194612-fc98d27c9e8b
 	github.com/influxdata/vertica-sql-go v1.3.5
 	github.com/jackc/pgx/v5 v5.9.2

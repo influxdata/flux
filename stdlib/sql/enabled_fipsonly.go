@@ -12,6 +12,8 @@ func isDriverEnabled(driver string) bool {
 	switch driver {
 	case "mssql", "sqlserver", "snowflake":
 		return false
+	case "sqlite3":
+		return isSqliteDriverEnabled()
 	default:
 		return true
 	}
@@ -24,6 +26,8 @@ func disabledDriverError(driver string) error {
 		return errMssqlDisabled
 	case "snowflake":
 		return errSnowflakeDisabled
+	case "sqlite3":
+		return sqliteDisabledDriverError()
 	default:
 		return nil
 	}

@@ -1,6 +1,7 @@
 package sql_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -656,6 +657,9 @@ func TestToSQLite3_Process(t *testing.T) {
 
 			transformation, err := fsql.NewToSQLTransformation(d, dependenciestest.Default(), c, tc.spec)
 			if err != nil {
+				if errors.Is(err, fsql.ErrorDriverDisabled) {
+					t.Skipf("%s driver is disabled", driverName)
+				}
 				t.Fatal(err)
 			}
 
