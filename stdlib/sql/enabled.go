@@ -9,11 +9,21 @@ package sql
 // in a FIPS compliant manner. Once that happens, it can be removed
 // if desired.
 func isDriverEnabled(driver string) bool {
-	// All drivers are enabled in non-FIPS builds.
-	return true
+	switch driver {
+	case "sqlite3":
+		return isSqliteDriverEnabled()
+	default:
+		// All other drivers are enabled in non-FIPS builds.
+		return true
+	}
 }
 
 // disabledDriverError returns the error a driver gives when it is disabled.
 func disabledDriverError(driver string) error {
-	return nil
+	switch driver {
+	case "sqlite3":
+		return sqliteDisabledDriverError()
+	default:
+		return nil
+	}
 }
