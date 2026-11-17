@@ -60,7 +60,7 @@ resp = requests.do(
 			t.Error("no statusCode found in response")
 		} else {
 			if want, got := int64(200), statusCode.Int(); want != got {
-				t.Errorf("unexpected status code want: %q got: %q", want, got)
+				t.Errorf("unexpected status code want: %v got: %v", want, got)
 			}
 		}
 		if body, ok := resp.Get("body"); !ok {
